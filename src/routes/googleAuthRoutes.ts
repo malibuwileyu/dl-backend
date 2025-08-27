@@ -117,12 +117,16 @@ router.post('/google', async (req: Request, res: Response): Promise<Response> =>
 // Exchange authorization code for tokens (for native apps)
 router.post('/google/exchange', async (req: Request, res: Response): Promise<Response> => {
   try {
+    console.log('[GoogleAuth] Exchange request received');
     const { code } = req.body;
+    console.log('[GoogleAuth] Authorization code:', code?.substring(0, 20) + '...');
 
     if (!code) {
+      console.log('[GoogleAuth] No authorization code provided');
       return res.status(400).json({ error: 'No authorization code provided' });
     }
 
+    console.log('[GoogleAuth] Attempting to exchange code for tokens...');
     // Exchange code for tokens using iOS client
     const { tokens } = await iosClient.getToken(code);
 
@@ -212,8 +216,15 @@ router.post('/google/exchange', async (req: Request, res: Response): Promise<Res
     });
 
   } catch (error) {
+    console.error('[GoogleAuth] Exchange error:', error);
     logger.error('Google auth exchange error:', error);
-    return res.status(500).json({ error: 'Authentication failed' });
+    
+    // Return more specific error info for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+    return res.status(500).json({ 
+      error: 'Authentication failed',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    });
   }
 });
 
