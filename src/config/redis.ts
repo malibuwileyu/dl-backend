@@ -14,7 +14,7 @@ export async function connectRedis(): Promise<void> {
     
     // Parse Redis URL for Railway compatibility
     let redisOptions: any = {
-      retryStrategy: (times) => {
+      retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
       },
