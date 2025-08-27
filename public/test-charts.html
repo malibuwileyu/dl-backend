@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Charts</title>
+    <script src="/chart.min.js"></script>
+    <style>
+        .chart-container {
+            width: 400px;
+            height: 400px;
+            margin: 20px;
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Charts</h1>
+    <div class="chart-container">
+        <canvas id="testChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="trendsChart"></canvas>
+    </div>
+    <div id="output"></div>
+
+    <script>
+        // Test productivity data
+        async function testCharts() {
+            try {
+                const response = await fetch('/api/v1/admin/productivity-analysis?period=today&group=all');
+                const data = await response.json();
+                
+                document.getElementById('output').innerHTML = `
+                    <h2>API Response:</h2>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // Test pie chart
+                const ctx1 = document.getElementById('testChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Productive', 'Neutral', 'Distracting'],
+                        datasets: [{
+                            data: [
+                                data.summary.productiveTime,
+                                data.summary.neutralTime,
+                                data.summary.distractingTime
+                            ],
+                            backgroundColor: ['#4CAF50', '#9E9E9E', '#FF5722']
+                        }]
+                    }
+                });
+                
+                // Test trends chart
+                const ctx2 = document.getElementById('trendsChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: data.trends.hour.map(t => t.label),
+                        datasets: [{
+                            label: 'Productive',
+                            data: data.trends.hour.map(t => t.productive),
+                            borderColor: '#4CAF50'
+                        }]
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML = `<h2>Error: ${error.message}</h2>`;
+            }
+        }
+        
+        testCharts();
+    </script>
+</body>
+</html>

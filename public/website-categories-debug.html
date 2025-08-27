@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Website Categories Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 5px; padding: 10px; }
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; }
+        .modal.active { display: block; }
+    </style>
+</head>
+<body>
+    <h1>Website Categories Debug</h1>
+    
+    <button onclick="testClick()">Test Click</button>
+    <button onclick="showAddModal()">Show Add Modal</button>
+    
+    <div id="categoryModal" class="modal">
+        <h2>Add Category</h2>
+        <form id="categoryForm" onsubmit="handleSubmit(event)">
+            <input type="text" id="domainPattern" placeholder="Domain pattern" required><br>
+            <select id="category" required>
+                <option value="">Select category</option>
+                <option value="productive">Productive</option>
+                <option value="neutral">Neutral</option>
+                <option value="distracting">Distracting</option>
+            </select><br>
+            <button type="submit">Save</button>
+            <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        console.log('Script loaded');
+        
+        function testClick() {
+            console.log('Test click works');
+            alert('Test click works');
+        }
+        
+        function showAddModal() {
+            console.log('showAddModal called');
+            document.getElementById('categoryModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            console.log('closeModal called');
+            document.getElementById('categoryModal').classList.remove('active');
+        }
+        
+        function handleSubmit(event) {
+            event.preventDefault();
+            console.log('Form submitted');
+            
+            const formData = {
+                pattern: document.getElementById('domainPattern').value,
+                category: document.getElementById('category').value
+            };
+            
+            console.log('Sending:', formData);
+            
+            fetch('/api/v1/website-categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                document.getElementById('output').innerHTML += '<p>Created: ' + JSON.stringify(data) + '</p>';
+                closeModal();
+                document.getElementById('categoryForm').reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        }
+        
+        // Test API on load
+        fetch('/api/v1/website-categories')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Current categories:', data);
+                document.getElementById('output').innerHTML = '<p>Current categories: ' + JSON.stringify(data) + '</p>';
+            })
+            .catch(error => console.error('Load error:', error));
+    </script>
+</body>
+</html>

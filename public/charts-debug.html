@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charts Debug</title>
+    <script src="/chart.min.js"></script>
+    <style>
+        .chart-container {
+            width: 600px;
+            height: 400px;
+            margin: 20px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background: white;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Charts Debug</h1>
+    
+    <div class="chart-container">
+        <h2>Productivity Chart (Pie)</h2>
+        <canvas id="productivityChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Trends Chart (Line)</h2>
+        <canvas id="trendsChart"></canvas>
+    </div>
+    
+    <div id="debug"></div>
+
+    <script>
+        let debugLog = [];
+        
+        function log(msg, data) {
+            debugLog.push({msg, data, time: new Date().toISOString()});
+            document.getElementById('debug').innerHTML = `<pre>${JSON.stringify(debugLog, null, 2)}</pre>`;
+        }
+        
+        async function initCharts() {
+            try {
+                log('Fetching data...');
+                const response = await fetch('/api/v1/admin/productivity-analysis?period=today&group=all');
+                const data = await response.json();
+                log('Data received', {summary: data.summary, trendsCount: data.trends.hour.length});
+                
+                // Productivity Chart
+                const ctx1 = document.getElementById('productivityChart');
+                log('Canvas 1', {element: ctx1, width: ctx1.width, height: ctx1.height});
+                
+                const chart1 = new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Productive', 'Neutral', 'Distracting'],
+                        datasets: [{
+                            label: 'Time Distribution',
+                            data: [
+                                data.summary.productiveTime,
+                                data.summary.neutralTime,
+                                data.summary.distractingTime
+                            ],
+                            backgroundColor: ['#4CAF50', '#9E9E9E', '#FF5722']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+                log('Chart 1 created', {chart: !!chart1});
+                
+                // Trends Chart
+                const ctx2 = document.getElementById('trendsChart');
+                log('Canvas 2', {element: ctx2, width: ctx2.width, height: ctx2.height});
+                
+                const chart2 = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: data.trends.hour.map(t => t.label),
+                        datasets: [
+                            {
+                                label: 'Productive',
+                                data: data.trends.hour.map(t => t.productive),
+                                borderColor: '#4CAF50',
+                                fill: false
+                            },
+                            {
+                                label: 'Neutral',
+                                data: data.trends.hour.map(t => t.neutral),
+                                borderColor: '#9E9E9E',
+                                fill: false
+                            },
+                            {
+                                label: 'Distracting',
+                                data: data.trends.hour.map(t => t.distracting),
+                                borderColor: '#FF5722',
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+                log('Chart 2 created', {chart: !!chart2});
+                
+            } catch (error) {
+                log('Error', {message: error.message, stack: error.stack});
+            }
+        }
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCharts);
+        } else {
+            initCharts();
+        }
+    </script>
+</body>
+</html>

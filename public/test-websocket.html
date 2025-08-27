@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:4051', {
+            transports: ['websocket', 'polling']
+        });
+
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+
+        socket.on('connect', () => {
+            statusDiv.textContent = 'Connected! Socket ID: ' + socket.id;
+            statusDiv.style.color = 'green';
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            statusDiv.textContent = 'Disconnected';
+            statusDiv.style.color = 'red';
+            console.log('Disconnected from server');
+        });
+
+        socket.on('error', (error) => {
+            statusDiv.textContent = 'Error: ' + error;
+            statusDiv.style.color = 'red';
+            console.error('Socket error:', error);
+        });
+
+        // Test receiving messages
+        socket.on('test', (data) => {
+            const message = document.createElement('div');
+            message.textContent = 'Received: ' + JSON.stringify(data);
+            messagesDiv.appendChild(message);
+        });
+    </script>
+</body>
+</html>

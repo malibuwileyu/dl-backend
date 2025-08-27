@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Website Categories</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Test Website Categories API</h1>
+    
+    <button onclick="testGet()">Test GET</button>
+    <button onclick="testPost()">Test POST</button>
+    <button onclick="testPut()">Test PUT</button>
+    <button onclick="testDelete()">Test DELETE</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, data) {
+            const div = document.createElement('div');
+            div.className = 'result';
+            div.innerHTML = `<strong>${message}</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testGet() {
+            try {
+                const response = await fetch('/api/v1/website-categories');
+                const data = await response.json();
+                log('GET /api/v1/website-categories', data);
+            } catch (error) {
+                log('GET Error', error.message);
+            }
+        }
+        
+        async function testPost() {
+            try {
+                const response = await fetch('/api/v1/website-categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pattern: 'test' + Date.now() + '.com',
+                        category: 'neutral'
+                    })
+                });
+                const data = await response.json();
+                log('POST /api/v1/website-categories', data);
+            } catch (error) {
+                log('POST Error', error.message);
+            }
+        }
+        
+        async function testPut() {
+            try {
+                // First get a category to update
+                const getResponse = await fetch('/api/v1/website-categories');
+                const categories = await getResponse.json();
+                if (categories.length === 0) {
+                    log('PUT Error', 'No categories to update');
+                    return;
+                }
+                
+                const id = categories[0].id;
+                const response = await fetch(`/api/v1/website-categories/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pattern: categories[0].pattern,
+                        category: 'productive'
+                    })
+                });
+                const data = await response.json();
+                log(`PUT /api/v1/website-categories/${id}`, data);
+            } catch (error) {
+                log('PUT Error', error.message);
+            }
+        }
+        
+        async function testDelete() {
+            try {
+                // First get a category to delete
+                const getResponse = await fetch('/api/v1/website-categories');
+                const categories = await getResponse.json();
+                const testCategory = categories.find(c => c.pattern.startsWith('test'));
+                
+                if (!testCategory) {
+                    log('DELETE Error', 'No test category to delete');
+                    return;
+                }
+                
+                const response = await fetch(`/api/v1/website-categories/${testCategory.id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                log(`DELETE /api/v1/website-categories/${testCategory.id}`, data);
+            } catch (error) {
+                log('DELETE Error', error.message);
+            }
+        }
+        
+        // Test on load
+        testGet();
+    </script>
+</body>
+</html>

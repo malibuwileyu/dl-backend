@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Categories - Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            background: #1976D2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 0;
+            min-width: fit-content;
+        }
+        
+        .nav-item {
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            border-bottom-color: white;
+        }
+        
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 24px auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 24px;
+        }
+        
+        /* Stats Panel */
+        .stats-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+        
+        .stat-card {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: #1976D2;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        /* Category Management */
+        .category-management {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .add-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .add-btn:hover {
+            background: #45a049;
+        }
+        
+        /* Search and Filter */
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .filter-select {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        /* Categories Table */
+        .categories-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .categories-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .categories-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .categories-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .app-name {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+        
+        .bundle-id {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .category-productive {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .category-neutral {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .category-distracting {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .scope-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #f5f5f5;
+            border-color: #bbb;
+        }
+        
+        .action-btn.delete {
+            color: #d32f2f;
+        }
+        
+        .action-btn.delete:hover {
+            background: #ffebee;
+            border-color: #d32f2f;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .close-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #1976D2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1565C0;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: #4CAF50;
+        }
+        
+        .toast.error {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>App Category Management</h1>
+            <div class="header-actions">
+                <span id="userInfo"></span>
+                <button id="logoutBtn" class="action-btn">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="/admin-dashboard.html" class="nav-item">Dashboard</a>
+            <a href="/app-categories.html" class="nav-item active">App Categories</a>
+            <a href="/website-categories.html" class="nav-item">Website Categories</a>
+            <a href="/productivity-analysis.html" class="nav-item">Productivity Analysis</a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div style="width: 100%;">
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalApps">0</div>
+                        <div class="stat-label">Total Apps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="productiveApps">0</div>
+                        <div class="stat-label">Productive Apps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="neutralApps">0</div>
+                        <div class="stat-label">Neutral Apps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="distractingApps">0</div>
+                        <div class="stat-label">Distracting Apps</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Category Management -->
+            <div class="category-management">
+                <div class="section-header">
+                    <h2 class="section-title">App Categories</h2>
+                    <button class="add-btn" id="addCategoryBtn">+ Add Category</button>
+                </div>
+                
+                <div class="controls">
+                    <input type="text" class="search-box" id="searchInput" placeholder="Search apps...">
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="productive">Productive</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="distracting">Distracting</option>
+                    </select>
+                </div>
+                
+                <div id="categoriesContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading categories...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Add/Edit Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Add App Category</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label class="form-label">App Name *</label>
+                    <input type="text" class="form-input" id="appName" required>
+                    <div class="form-hint">The display name of the application</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Bundle ID</label>
+                    <input type="text" class="form-input" id="bundleId" placeholder="com.company.appname">
+                    <div class="form-hint">Optional: The unique bundle identifier (e.g., com.apple.Safari)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select class="form-select" id="category" required>
+                        <option value="">Select a category</option>
+                        <option value="productive">Productive</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="distracting">Distracting</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        let categories = [];
+        let editingId = null;
+        
+        // Check authentication (disabled for now)
+        function checkAuth() {
+            // Authentication disabled for testing
+            document.getElementById('userInfo').textContent = 'Admin User';
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = '/admin.html';
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/v1/app-categories');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load categories');
+                }
+                
+                categories = await response.json();
+                renderCategories();
+                updateStats();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                showToast('Failed to load categories', 'error');
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const stats = {
+                total: categories.length,
+                productive: categories.filter(c => c.category === 'productive').length,
+                neutral: categories.filter(c => c.category === 'neutral').length,
+                distracting: categories.filter(c => c.category === 'distracting').length
+            };
+            
+            document.getElementById('totalApps').textContent = stats.total;
+            document.getElementById('productiveApps').textContent = stats.productive;
+            document.getElementById('neutralApps').textContent = stats.neutral;
+            document.getElementById('distractingApps').textContent = stats.distracting;
+        }
+        
+        // Render categories table
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            // Filter categories
+            let filtered = categories.filter(cat => {
+                const matchesSearch = !searchTerm || 
+                    cat.app_name.toLowerCase().includes(searchTerm) ||
+                    (cat.bundle_id && cat.bundle_id.toLowerCase().includes(searchTerm));
+                const matchesCategory = !categoryFilter || cat.category === categoryFilter;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📱</div>
+                        <div>No app categories found</div>
+                        <div style="margin-top: 8px; font-size: 14px;">
+                            ${searchTerm || categoryFilter ? 'Try adjusting your filters' : 'Click "Add Category" to get started'}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="categories-table">
+                    <thead>
+                        <tr>
+                            <th>App Name</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(cat => `
+                            <tr>
+                                <td>
+                                    <div class="app-name">${escapeHtml(cat.app_name)}</div>
+                                    ${cat.bundle_id ? `<div class="bundle-id">${escapeHtml(cat.bundle_id)}</div>` : ''}
+                                </td>
+                                <td>
+                                    <span class="category-badge category-${cat.category}">
+                                        ${cat.category}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <button class="action-btn edit-btn" data-id="${cat.id}">Edit</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show add modal
+        function showAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add App Category';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModal').classList.add('active');
+        }
+        
+        // Edit category
+        function editCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+            
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit App Category';
+            document.getElementById('appName').value = category.app_name;
+            document.getElementById('bundleId').value = category.bundle_id || '';
+            document.getElementById('category').value = category.category;
+            document.getElementById('categoryModal').classList.add('active');
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('categoryModal').classList.remove('active');
+            document.getElementById('categoryForm').reset();
+            editingId = null;
+        }
+        
+        // Delete category
+        async function deleteCategory(id) {
+            if (!confirm('Are you sure you want to delete this category?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/v1/app-categories/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete category');
+                }
+                
+                showToast('Category deleted successfully');
+                loadCategories();
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                showToast('Failed to delete category', 'error');
+            }
+        }
+        
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Button event listeners
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('addCategoryBtn').addEventListener('click', showAddModal);
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            
+            // Form submission
+            document.getElementById('categoryForm').addEventListener('submit', handleFormSubmit);
+            
+            // Search and filter
+            document.getElementById('searchInput').addEventListener('input', renderCategories);
+            document.getElementById('categoryFilter').addEventListener('change', renderCategories);
+            
+            // Delegate events for dynamic buttons
+            document.getElementById('categoriesContainer').addEventListener('click', function(e) {
+                if (e.target.classList.contains('edit-btn')) {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    editCategory(id);
+                }
+            });
+        }
+        
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                appName: document.getElementById('appName').value,
+                bundleId: document.getElementById('bundleId').value || undefined,
+                category: document.getElementById('category').value
+            };
+            
+            try {
+                const url = editingId 
+                    ? `/api/v1/app-categories/${editingId}`
+                    : '/api/v1/app-categories';
+                
+                const response = await fetch(url, {
+                    method: editingId ? 'PUT' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save category');
+                }
+                
+                showToast(`Category ${editingId ? 'updated' : 'created'} successfully`);
+                closeModal();
+                loadCategories();
+            } catch (error) {
+                console.error('Error saving category:', error);
+                showToast('Failed to save category', 'error');
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkAuth();
+            loadCategories();
+        });
+    </script>
+</body>
+</html>

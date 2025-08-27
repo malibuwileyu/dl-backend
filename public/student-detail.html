@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Detail - Student Time Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .back-link {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            background: #1976D2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Student Info Card */
+        .student-info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .student-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .student-details {
+            flex: 1;
+        }
+        
+        .student-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .student-meta {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .student-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        
+        .status-indicator.active {
+            background: #4CAF50;
+        }
+        
+        /* Time Period Selector */
+        .period-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .period-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .period-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2196F3;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        /* Productivity Chart */
+        .chart-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Activity Timeline */
+        .timeline-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 24px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .timeline {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .timeline-dot.productive {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .timeline-dot.neutral {
+            background: #FFC107;
+            color: white;
+        }
+        
+        .timeline-dot.distracting {
+            background: #f44336;
+            color: white;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-app {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* Distractions Section */
+        .distractions-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-top: 24px;
+        }
+        
+        .distractions-list {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .distraction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            background: #fafafa;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        
+        .distraction-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .distraction-info {
+            flex: 1;
+        }
+        
+        .distraction-name {
+            font-weight: 500;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .distraction-stats {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .distraction-time {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f44336;
+            margin-left: 16px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #666;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-segment {
+            float: left;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .progress-segment.productive {
+            background: #4CAF50;
+        }
+        
+        .progress-segment.neutral {
+            background: #FFC107;
+        }
+        
+        .progress-segment.distracting {
+            background: #f44336;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1 id="page-title">Student Detail</h1>
+            <a href="/admin-dashboard.html" class="back-link">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="/admin-dashboard.html" class="nav-item">Dashboard</a>
+            <a href="/app-categories.html" class="nav-item">App Categories</a>
+            <a href="/website-categories.html" class="nav-item">Website Categories</a>
+            <a href="/productivity-analysis.html" class="nav-item">Productivity Analysis</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Student Info Card -->
+        <div class="student-info-card">
+            <div class="student-avatar" id="student-avatar"></div>
+            <div class="student-details">
+                <div class="student-name" id="student-name">Loading...</div>
+                <div class="student-meta" id="student-meta"></div>
+                <div class="student-status">
+                    <span class="status-indicator" id="status-indicator"></span>
+                    <span id="status-text">Offline</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Time Period Selector -->
+        <div class="period-selector">
+            <button class="period-btn active" data-period="today">Today</button>
+            <button class="period-btn" data-period="week">This Week</button>
+            <button class="period-btn" data-period="month">This Month</button>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-time">0h 0m</div>
+                <div class="stat-label">Total Time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="productivity-score">0%</div>
+                <div class="stat-label">Productivity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="academic-time">0h 0m</div>
+                <div class="stat-label">Academic Time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="alert-count">0m</div>
+                <div class="stat-label">Distraction Time</div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-bar" id="progress-bar"></div>
+        
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Productivity Chart -->
+            <div class="chart-section">
+                <h2 class="section-title">Productivity Trend</h2>
+                <div class="chart-container">
+                    <canvas id="productivityChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Activity Timeline -->
+            <div class="timeline-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Activity</h2>
+                </div>
+                <div id="activity-timeline" class="timeline">
+                    <div class="loading">Loading activities...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Distractions Section -->
+        <div class="distractions-section">
+            <div class="section-header">
+                <h2 class="section-title">Top Distractions</h2>
+            </div>
+            <div id="distractions-list" class="distractions-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">✨</div>
+                    <p>No distractions recorded</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/chart.min.js"></script>
+    <script>
+        // State
+        let studentId = null;
+        let studentData = null;
+        let currentPeriod = 'today';
+        let productivityChart = null;
+        
+        // Initialize
+        async function init() {
+            // Get student ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            studentId = urlParams.get('id');
+            
+            if (!studentId) {
+                window.location.href = '/admin-dashboard.html';
+                return;
+            }
+            
+            // Load student data
+            await loadStudentData();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load initial data
+            await loadPeriodData(currentPeriod);
+        }
+        
+        // Load student basic info
+        async function loadStudentData() {
+            try {
+                const response = await fetch(`/api/v1/admin/students`);
+                const data = await response.json();
+                
+                studentData = data.students.find(s => s.id == studentId);
+                if (!studentData) {
+                    alert('Student not found');
+                    window.location.href = '/admin-dashboard.html';
+                    return;
+                }
+                
+                // Update UI
+                const initials = getInitials(studentData.name || studentData.email);
+                document.getElementById('student-avatar').textContent = initials;
+                document.getElementById('student-name').textContent = studentData.name || studentData.email.split('@')[0];
+                document.getElementById('student-meta').textContent = `${studentData.email} • Grade ${studentData.grade_level || 'N/A'}`;
+                document.getElementById('page-title').textContent = `${studentData.name || 'Student'} - Detail`;
+                
+                // Check if active
+                const isActive = await checkIfActive();
+                updateStatusIndicator(isActive);
+                
+            } catch (error) {
+                console.error('Error loading student data:', error);
+            }
+        }
+        
+        // Check if student is active
+        async function checkIfActive() {
+            try {
+                const response = await fetch('/api/v1/admin/active-students');
+                const data = await response.json();
+                // Convert all IDs to strings for comparison
+                const activeIds = (data.activeStudents || []).map(id => String(id));
+                return activeIds.includes(String(studentId));
+            } catch (error) {
+                console.error('Error checking active status:', error);
+                return false;
+            }
+        }
+        
+        // Update status indicator
+        function updateStatusIndicator(isActive) {
+            const indicator = document.getElementById('status-indicator');
+            const text = document.getElementById('status-text');
+            
+            if (isActive) {
+                indicator.classList.add('active');
+                text.textContent = 'Active now';
+            } else {
+                indicator.classList.remove('active');
+                text.textContent = 'Offline';
+            }
+        }
+        
+        // Load period data
+        async function loadPeriodData(period) {
+            try {
+                // Load productivity data
+                const productivityResponse = await fetch(`/api/v1/admin/students/${studentId}/productivity?period=${period}`);
+                const productivityData = await productivityResponse.json();
+                
+                // Update stats
+                updateStats(productivityData);
+                
+                // Update progress bar
+                updateProgressBar(productivityData);
+                
+                // Update chart
+                updateProductivityChart(productivityData);
+                
+                // Load activities
+                const activitiesResponse = await fetch(`/api/v1/admin/user-activities/${studentId}?period=${period}`);
+                const activitiesData = await activitiesResponse.json();
+                renderActivityTimeline(activitiesData.activities || []);
+                
+                // Load distractions
+                const distractionsResponse = await fetch(`/api/v1/admin/students/${studentId}/distractions?period=${period}`);
+                const distractionsData = await distractionsResponse.json();
+                renderDistractions(distractionsData.distractions || []);
+                
+            } catch (error) {
+                console.error('Error loading period data:', error);
+            }
+        }
+        
+        // Update stats
+        function updateStats(data) {
+            // Total time (already in seconds)
+            const totalMinutes = Math.round((data.totalTime || 0) / 60);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            document.getElementById('total-time').textContent = `${hours}h ${minutes}m`;
+            
+            // Productivity score - calculate as productive time vs categorized time
+            const productiveTime = data.productiveTime || 0;
+            const neutralTime = data.neutralTime || 0;
+            const distractingTime = data.distractingTime || 0;
+            const categorizedTime = productiveTime + neutralTime + distractingTime;
+            const productivity = categorizedTime > 0 ? Math.round((productiveTime / categorizedTime) * 100) : 0;
+            document.getElementById('productivity-score').textContent = `${productivity}%`;
+            
+            // Academic time (productive time)
+            const academicMinutes = Math.round((data.productiveTime || 0) / 60);
+            const acadHours = Math.floor(academicMinutes / 60);
+            const acadMinutes = academicMinutes % 60;
+            document.getElementById('academic-time').textContent = `${acadHours}h ${acadMinutes}m`;
+        }
+        
+        // Update progress bar
+        function updateProgressBar(data) {
+            const container = document.getElementById('progress-bar');
+            const total = data.totalTime || 0;
+            
+            if (total === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;">No activity data</div>';
+                return;
+            }
+            
+            const segments = [
+                { category: 'productive', label: 'Productive', value: data.productiveTime || 0 },
+                { category: 'neutral', label: 'Neutral', value: data.neutralTime || 0 },
+                { category: 'distracting', label: 'Distracting', value: data.distractingTime || 0 }
+            ];
+            
+            container.innerHTML = segments
+                .filter(s => s.value > 0)
+                .map(segment => {
+                    const percentage = (segment.value / total) * 100;
+                    return `
+                        <div class="progress-segment ${segment.category}" 
+                             style="width: ${percentage}%"
+                             title="${segment.label}: ${Math.round(percentage)}%">
+                            ${percentage > 10 ? Math.round(percentage) + '%' : ''}
+                        </div>
+                    `;
+                }).join('');
+        }
+        
+        // Update productivity chart
+        function updateProductivityChart(data) {
+            const ctx = document.getElementById('productivityChart').getContext('2d');
+            
+            // Prepare hourly data from trends
+            const hourlyData = data.trends?.hour || [];
+            const labels = [];
+            const productiveData = [];
+            
+            hourlyData.forEach((hourData, index) => {
+                labels.push(formatHour(index));
+                const total = (hourData.productive || 0) + (hourData.neutral || 0) + (hourData.distracting || 0);
+                const productivePercent = total > 0 ? Math.round((hourData.productive / total) * 100) : 0;
+                productiveData.push(productivePercent);
+            });
+            
+            if (productivityChart) {
+                productivityChart.destroy();
+            }
+            
+            productivityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Productivity %',
+                        data: productiveData,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render activity timeline
+        function renderActivityTimeline(activities) {
+            const container = document.getElementById('activity-timeline');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No activities recorded</p></div>';
+                return;
+            }
+            
+            container.innerHTML = activities.slice(0, 20).map(activity => {
+                const icon = getCategoryIcon(activity.category);
+                const duration = formatDuration(activity.duration);
+                const time = formatTime(activity.start_time);
+                
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${activity.category || 'neutral'}">${icon}</div>
+                        <div class="timeline-content">
+                            <div class="timeline-app">${activity.app_name}</div>
+                            <div class="timeline-details">
+                                ${activity.window_title || ''}
+                                ${activity.url ? ` • ${new URL(activity.url).hostname}` : ''}
+                            </div>
+                            <div class="timeline-time">${time} • ${duration}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Render distractions
+        function renderDistractions(distractions) {
+            const container = document.getElementById('distractions-list');
+            
+            // Update distraction count (total distraction time in minutes)
+            const totalDistractionMinutes = distractions.reduce((sum, d) => sum + Math.round(d.totalTime / 60), 0);
+            const hours = Math.floor(totalDistractionMinutes / 60);
+            const minutes = totalDistractionMinutes % 60;
+            document.getElementById('alert-count').textContent = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+            
+            if (distractions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <p>No distractions recorded</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = distractions.map(distraction => {
+                const totalMinutes = Math.round(distraction.totalTime / 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                
+                return `
+                    <div class="distraction-item">
+                        <div class="distraction-info">
+                            <div class="distraction-name">${distraction.name}</div>
+                            <div class="distraction-stats">
+                                ${distraction.sessions} session${distraction.sessions > 1 ? 's' : ''} • 
+                                ${distraction.averageSessionMinutes}m avg • 
+                                ${distraction.daysUsed} day${distraction.daysUsed > 1 ? 's' : ''}
+                            </div>
+                        </div>
+                        <div class="distraction-time">${timeStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Update active state
+                    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Load new period data
+                    currentPeriod = e.target.dataset.period;
+                    loadPeriodData(currentPeriod);
+                });
+            });
+            
+            // Refresh data every 30 seconds
+            setInterval(async () => {
+                const isActive = await checkIfActive();
+                updateStatusIndicator(isActive);
+                loadPeriodData(currentPeriod);
+            }, 30000);
+        }
+        
+        // Utility functions
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(part => part[0])
+                .join('')
+                .substring(0, 2)
+                .toUpperCase();
+        }
+        
+        function getCategoryIcon(category) {
+            switch (category) {
+                case 'productive': return '✓';
+                case 'distracting': return '!';
+                default: return '•';
+            }
+        }
+        
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) {
+                return `${minutes}m`;
+            }
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+        
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit' 
+                });
+            }
+            
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+        
+        function formatHour(hour) {
+            if (hour === 0) return '12am';
+            if (hour === 12) return '12pm';
+            return hour > 12 ? `${hour - 12}pm` : `${hour}am`;
+        }
+        
+        function getPeriodStart(period) {
+            const now = new Date();
+            switch (period) {
+                case 'today':
+                    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                case 'week':
+                    const day = now.getDay();
+                    const diff = now.getDate() - day;
+                    return new Date(now.setDate(diff));
+                case 'month':
+                    return new Date(now.getFullYear(), now.getMonth(), 1);
+                default:
+                    return now;
+            }
+        }
+        
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+            return date.toLocaleDateString();
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

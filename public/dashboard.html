@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Time Tracker - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .alert {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #ff4444;
+        }
+        .alert.distraction {
+            border-left-color: #ff9800;
+        }
+        .alert.excessive_usage {
+            border-left-color: #f44336;
+        }
+        .alert.offtask {
+            border-left-color: #ff5722;
+        }
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .alert-type {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .alert-time {
+            color: #666;
+            font-size: 14px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #1976D2;
+        }
+        .btn.danger {
+            background: #f44336;
+        }
+        .btn.danger:hover {
+            background: #d32f2f;
+        }
+        #alerts-container {
+            min-height: 400px;
+        }
+        .no-alerts {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+        .status {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Time Tracker - Real-Time Admin Dashboard</h1>
+        
+        <div class="status" id="status">Loading...</div>
+        
+        <div class="controls">
+            <button class="btn" onclick="fetchAlerts()">Refresh</button>
+            <button class="btn danger" onclick="clearAlerts()">Clear All</button>
+            <label>
+                <input type="checkbox" id="auto-refresh" checked> Auto-refresh every 3 seconds
+            </label>
+        </div>
+        
+        <h2>Recent Alerts</h2>
+        <div id="alerts-container">
+            <div class="no-alerts">Loading alerts...</div>
+        </div>
+    </div>
+
+    <script>
+        const alertsContainer = document.getElementById('alerts-container');
+        const statusEl = document.getElementById('status');
+        const autoRefreshCheckbox = document.getElementById('auto-refresh');
+        let refreshInterval;
+
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('http://127.0.0.1:4051/api/v1/alerts/recent');
+                const data = await response.json();
+                
+                statusEl.textContent = `Last updated: ${new Date().toLocaleTimeString()} - ${data.alerts.length} alerts`;
+                
+                if (data.alerts.length === 0) {
+                    alertsContainer.innerHTML = '<div class="no-alerts">No alerts detected. Monitoring student activity...</div>';
+                } else {
+                    renderAlerts(data.alerts);
+                }
+            } catch (error) {
+                statusEl.textContent = 'Error loading alerts';
+                console.error('Failed to fetch alerts:', error);
+            }
+        }
+
+        function renderAlerts(alerts) {
+            alertsContainer.innerHTML = alerts.map(alert => {
+                const time = new Date(alert.timestamp).toLocaleTimeString();
+                const typeLabels = {
+                    distraction: 'Distracting App',
+                    excessive_usage: 'Excessive Usage',
+                    offtask: 'Off-Task Website'
+                };
+
+                return `
+                    <div class="alert ${alert.type}">
+                        <div class="alert-header">
+                            <span class="alert-type">${typeLabels[alert.type] || alert.type}</span>
+                            <span class="alert-time">${time}</span>
+                        </div>
+                        <div class="alert-content">
+                            <strong>${alert.appName}</strong>
+                            ${alert.duration ? ` - ${Math.round(alert.duration / 60)} minutes` : ''}
+                            ${alert.url ? `<br><small>${alert.url}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function clearAlerts() {
+            if (confirm('Clear all alerts?')) {
+                try {
+                    await fetch('http://127.0.0.1:4051/api/v1/alerts/clear', { method: 'DELETE' });
+                    fetchAlerts();
+                } catch (error) {
+                    console.error('Failed to clear alerts:', error);
+                }
+            }
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshCheckbox.checked) {
+                refreshInterval = setInterval(fetchAlerts, 3000);
+            }
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        autoRefreshCheckbox.addEventListener('change', () => {
+            if (autoRefreshCheckbox.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+
+        // Initial load
+        fetchAlerts();
+        startAutoRefresh();
+    </script>
+</body>
+</html>

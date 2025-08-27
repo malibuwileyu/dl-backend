@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Productivity Analysis - Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .filter-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .apply-btn {
+            background: #1976D2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            align-self: flex-end;
+        }
+        
+        /* Overview Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .overview-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 12px;
+        }
+        
+        .progress-segment {
+            height: 100%;
+            float: left;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-width: 2px;
+        }
+        
+        .progress-label {
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .progress-segment:hover .progress-label {
+            display: block;
+        }
+        
+        .progress-segment.show-label .progress-label {
+            display: block;
+        }
+        
+        .progress-productive {
+            background: #4CAF50;
+        }
+        
+        .progress-neutral {
+            background: #9E9E9E;
+        }
+        
+        .progress-distracting {
+            background: #FF5722;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: 400px;
+            position: relative;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: calc(100% - 60px);
+            width: 100%;
+        }
+        
+        /* Student List */
+        .students-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .students-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .students-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .productivity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .productivity-high {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .productivity-medium {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .productivity-low {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Productivity Analysis</h1>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label class="filter-label">Time Period</label>
+                <select class="filter-select" id="periodFilter">
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Student Group</label>
+                <select class="filter-select" id="groupFilter">
+                    <option value="all">All Students</option>
+                    <option value="grade-9">Grade 9</option>
+                    <option value="grade-10">Grade 10</option>
+                    <option value="grade-11">Grade 11</option>
+                    <option value="grade-12">Grade 12</option>
+                </select>
+            </div>
+            
+            <button class="apply-btn" onclick="applyFilters()">Apply Filters</button>
+        </div>
+        
+        <!-- Overview Cards -->
+        <div class="overview-grid">
+            <!-- Overall Productivity -->
+            <div class="overview-card">
+                <h3 class="card-title">Overall Time Distribution</h3>
+                <div class="progress-bar" id="overallProgress">
+                    <div class="progress-segment progress-productive" style="width: 0%"><span class="progress-label">0%</span></div>
+                    <div class="progress-segment progress-neutral" style="width: 0%"><span class="progress-label">0%</span></div>
+                    <div class="progress-segment progress-distracting" style="width: 0%"><span class="progress-label">0%</span></div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #4CAF50;"></div>
+                        <span>Productive</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #9E9E9E;"></div>
+                        <span>Neutral</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #FF5722;"></div>
+                        <span>Distracting</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Productivity Score -->
+            <div class="overview-card">
+                <h3 class="card-title">Average Productivity Score</h3>
+                <div class="stat-value" id="productivityScore">0%</div>
+                <div class="stat-label">Based on productive time vs total time</div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <!-- Category Breakdown Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Time by Category</h3>
+                    <select class="filter-select" id="chartView" onchange="updateCharts()">
+                        <option value="pie">Pie Chart</option>
+                        <option value="bar">Bar Chart</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="productivityChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Trends Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Productivity Trends</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student List -->
+        <div class="students-section">
+            <div class="section-header">
+                <h2 class="section-title">Student Productivity Details</h2>
+            </div>
+            <div id="studentsContainer">
+                <div>Loading student data...</div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Chart.js -->
+    <script src="/chart.min.js"></script>
+    
+    <script>
+        let productivityData = null;
+        let productivityChart = null;
+        let trendsChart = null;
+        
+        // Format duration
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            }
+            return `${minutes}m`;
+        }
+        
+        // Load productivity data
+        async function loadProductivityData() {
+            try {
+                const period = document.getElementById('periodFilter').value;
+                const group = document.getElementById('groupFilter').value;
+                
+                const response = await fetch(`/api/v1/admin/productivity-analysis?period=${period}&group=${group}`);
+                productivityData = await response.json();
+                
+                updateOverview();
+                updateCharts();
+                renderStudentList();
+            } catch (error) {
+                console.error('Error loading productivity data:', error);
+            }
+        }
+        
+        // Update overview cards
+        function updateOverview() {
+            if (!productivityData) return;
+            
+            const { summary } = productivityData;
+            
+            // Update progress bar (excluding offline time)
+            const total = summary.productiveTime + summary.neutralTime + summary.distractingTime;
+            if (total > 0) {
+                const productivePercent = (summary.productiveTime / total) * 100;
+                const neutralPercent = (summary.neutralTime / total) * 100;
+                const distractingPercent = (summary.distractingTime / total) * 100;
+                
+                const productiveEl = document.querySelector('.progress-productive');
+                const neutralEl = document.querySelector('.progress-neutral');
+                const distractingEl = document.querySelector('.progress-distracting');
+                
+                productiveEl.style.width = `${productivePercent}%`;
+                neutralEl.style.width = `${neutralPercent}%`;
+                distractingEl.style.width = `${distractingPercent}%`;
+                
+                // Update labels
+                productiveEl.querySelector('.progress-label').textContent = `${Math.round(productivePercent)}%`;
+                neutralEl.querySelector('.progress-label').textContent = `${Math.round(neutralPercent)}%`;
+                distractingEl.querySelector('.progress-label').textContent = `${Math.round(distractingPercent)}%`;
+                
+                // Only show label if segment is wide enough (> 10%)
+                productiveEl.classList.toggle('show-label', productivePercent > 10);
+                neutralEl.classList.toggle('show-label', neutralPercent > 10);
+                distractingEl.classList.toggle('show-label', distractingPercent > 10);
+            }
+            
+            // Update productivity score
+            const productivityScore = summary.totalTime > 0 
+                ? Math.round((summary.productiveTime / summary.totalTime) * 100)
+                : 0;
+            document.getElementById('productivityScore').textContent = `${productivityScore}%`;
+        }
+        
+        // Update charts
+        function updateCharts() {
+            if (!productivityData) return;
+            
+            const { summary, trends } = productivityData;
+            
+            // Update productivity chart
+            const chartType = document.getElementById('chartView').value;
+            const ctx1 = document.getElementById('productivityChart');
+            
+            if (productivityChart) {
+                productivityChart.destroy();
+            }
+            
+            productivityChart = new Chart(ctx1, {
+                type: chartType,
+                data: {
+                    labels: ['Productive', 'Neutral', 'Distracting'],
+                    datasets: [{
+                        data: [
+                            summary.productiveTime,
+                            summary.neutralTime,
+                            summary.distractingTime
+                        ],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#9E9E9E',
+                            '#FF5722'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = formatDuration(context.parsed.y !== undefined ? context.parsed.y : context.parsed);
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update trends chart
+            const ctx2 = document.getElementById('trendsChart');
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+            
+            trendsChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: trends.hour.map(t => t.label),
+                    datasets: [
+                        {
+                            label: 'Productive',
+                            data: trends.hour.map(t => t.productive),
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Neutral',
+                            data: trends.hour.map(t => t.neutral),
+                            borderColor: '#9E9E9E',
+                            backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Distracting',
+                            data: trends.hour.map(t => t.distracting),
+                            borderColor: '#FF5722',
+                            backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatDuration(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render student list
+        function renderStudentList() {
+            if (!productivityData || !productivityData.students) return;
+            
+            const container = document.getElementById('studentsContainer');
+            const students = productivityData.students;
+            
+            if (students.length === 0) {
+                container.innerHTML = '<div>No student data available</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Total Time</th>
+                            <th>Productivity Score</th>
+                            <th>Time Breakdown</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.map(student => {
+                            const productivityScore = student.totalTime > 0 
+                                ? Math.round((student.productiveTime / student.totalTime) * 100)
+                                : 0;
+                            
+                            let badgeClass = 'productivity-low';
+                            if (productivityScore >= 70) badgeClass = 'productivity-high';
+                            else if (productivityScore >= 40) badgeClass = 'productivity-medium';
+                            
+                            return `
+                                <tr>
+                                    <td>${student.name || student.email}</td>
+                                    <td>${formatDuration(student.totalTime)}</td>
+                                    <td>
+                                        <span class="productivity-badge ${badgeClass}">
+                                            ${productivityScore}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        P: ${formatDuration(student.productiveTime)}, 
+                                        N: ${formatDuration(student.neutralTime)}, 
+                                        D: ${formatDuration(student.distractingTime)}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            loadProductivityData();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductivityData();
+        });
+    </script>
+</body>
+</html>

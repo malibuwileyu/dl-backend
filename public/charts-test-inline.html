@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charts Test Inline</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .chart-container {
+            width: 600px;
+            height: 400px;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            position: relative;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Charts Test - Inline Script</h1>
+    
+    <div class="chart-container">
+        <h2>Productivity Chart</h2>
+        <div class="chart-wrapper">
+            <canvas id="productivityChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>Trends Chart</h2>
+        <div class="chart-wrapper">
+            <canvas id="trendsChart"></canvas>
+        </div>
+    </div>
+    
+    <div id="output"></div>
+
+    <!-- Chart.js -->
+    <script src="/chart.min.js"></script>
+    
+    <script>
+        console.log('Script starting, Chart available:', typeof Chart);
+        
+        // Load and display charts
+        async function loadCharts() {
+            try {
+                console.log('Fetching data...');
+                const response = await fetch('/api/v1/admin/productivity-analysis?period=today&group=all');
+                const data = await response.json();
+                console.log('Data received:', data);
+                
+                // Show data in output
+                document.getElementById('output').innerHTML = `
+                    <h3>Data Summary:</h3>
+                    <pre>${JSON.stringify(data.summary, null, 2)}</pre>
+                `;
+                
+                // Create productivity chart
+                const ctx1 = document.getElementById('productivityChart');
+                console.log('Canvas 1:', ctx1);
+                
+                const chart1 = new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Productive', 'Neutral', 'Distracting'],
+                        datasets: [{
+                            data: [
+                                data.summary.productiveTime || 0,
+                                data.summary.neutralTime || 0,
+                                data.summary.distractingTime || 0
+                            ],
+                            backgroundColor: ['#4CAF50', '#9E9E9E', '#FF5722']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Time Distribution'
+                            }
+                        }
+                    }
+                });
+                console.log('Chart 1 created:', chart1);
+                
+                // Create trends chart
+                const ctx2 = document.getElementById('trendsChart');
+                console.log('Canvas 2:', ctx2);
+                
+                if (data.trends && data.trends.hour && data.trends.hour.length > 0) {
+                    const chart2 = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: data.trends.hour.map(t => t.label),
+                            datasets: [
+                                {
+                                    label: 'Productive',
+                                    data: data.trends.hour.map(t => t.productive || 0),
+                                    borderColor: '#4CAF50',
+                                    backgroundColor: 'rgba(76, 175, 80, 0.1)'
+                                },
+                                {
+                                    label: 'Neutral',
+                                    data: data.trends.hour.map(t => t.neutral || 0),
+                                    borderColor: '#9E9E9E',
+                                    backgroundColor: 'rgba(158, 158, 158, 0.1)'
+                                },
+                                {
+                                    label: 'Distracting',
+                                    data: data.trends.hour.map(t => t.distracting || 0),
+                                    borderColor: '#FF5722',
+                                    backgroundColor: 'rgba(255, 87, 34, 0.1)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Hourly Trends'
+                                }
+                            }
+                        }
+                    });
+                    console.log('Chart 2 created:', chart2);
+                } else {
+                    console.log('No trends data available');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').innerHTML += `
+                    <h3>Error:</h3>
+                    <pre>${error.message}\n${error.stack}</pre>
+                `;
+            }
+        }
+        
+        // Wait for page load
+        window.addEventListener('load', function() {
+            console.log('Window loaded, starting charts...');
+            loadCharts();
+        });
+    </script>
+</body>
+</html>

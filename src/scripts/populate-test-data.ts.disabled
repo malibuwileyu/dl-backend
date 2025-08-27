@@ -1,0 +1,159 @@
+import { AppDataSource } from '../config/database';
+import { User } from '../entities/User';
+import { Organization } from '../entities/Organization';
+import { OrganizationSettings } from '../entities/OrganizationSettings';
+import { Subject } from '../entities/Subject';
+import bcrypt from 'bcrypt';
+
+async function populateTestData() {
+  try {
+    await AppDataSource.initialize();
+    console.log('Database connected');
+
+    const userRepo = AppDataSource.getRepository(User);
+    const orgRepo = AppDataSource.getRepository(Organization);
+    const settingsRepo = AppDataSource.getRepository(OrganizationSettings);
+    const subjectRepo = AppDataSource.getRepository(Subject);
+
+    // Create organizations
+    const schoolOrg = await orgRepo.save({
+      name: 'Demo High School',
+      domain: 'demo.school',
+      address: '123 Demo Street',
+      phone: '555-0123',
+      website: 'https://demo.school',
+      timezone: 'America/Los_Angeles',
+      features: ['time_tracking', 'productivity_monitoring', 'ai_categorization'],
+      subscription_status: 'active',
+      subscription_ends_at: new Date('2025-12-31'),
+      max_users: 100
+    });
+
+    console.log('Created organization:', schoolOrg.name);
+
+    // Create organization settings
+    await settingsRepo.save({
+      organization_id: schoolOrg.id,
+      work_hours_start: '08:00',
+      work_hours_end: '15:00',
+      screenshot_interval: 0,
+      idle_timeout: 300,
+      productive_apps: ['Xcode', 'Terminal', 'VS Code', 'Chrome', 'Safari'],
+      unproductive_apps: ['Discord', 'Slack', 'Messages'],
+      blocked_websites: ['facebook.com', 'instagram.com', 'tiktok.com'],
+      alert_settings: {
+        idle_alert: true,
+        unproductive_alert: true,
+        screenshot_alert: false
+      }
+    });
+
+    console.log('Created organization settings');
+
+    // Create subjects
+    const subjects = [
+      { name: 'Mathematics', code: 'MATH101', organization_id: schoolOrg.id },
+      { name: 'English', code: 'ENG101', organization_id: schoolOrg.id },
+      { name: 'Science', code: 'SCI101', organization_id: schoolOrg.id },
+      { name: 'History', code: 'HIST101', organization_id: schoolOrg.id },
+      { name: 'Computer Science', code: 'CS101', organization_id: schoolOrg.id }
+    ];
+
+    for (const subject of subjects) {
+      await subjectRepo.save(subject);
+    }
+    console.log('Created subjects');
+
+    // Create admin user
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
+    const admin = await userRepo.save({
+      email: 'admin@demo.school',
+      password_hash: hashedPassword,
+      name: 'Admin User',
+      role: 'admin',
+      organization_id: schoolOrg.id,
+      is_active: true,
+      email_verified: true
+    });
+
+    console.log('Created admin user:', admin.email);
+
+    // Create teacher user
+    const teacher = await userRepo.save({
+      email: 'teacher@demo.school',
+      password_hash: hashedPassword,
+      name: 'Demo Teacher',
+      role: 'teacher',
+      organization_id: schoolOrg.id,
+      is_active: true,
+      email_verified: true
+    });
+
+    console.log('Created teacher user:', teacher.email);
+
+    // Create test students (including preserving Ryan's info)
+    const students = [
+      {
+        email: 'ryan.heron@superbuilders.school',
+        name: 'Ryan Heron',
+        grade: '12',
+        student_id: 'RH001'
+      },
+      {
+        email: 'john.doe@demo.school',
+        name: 'John Doe',
+        grade: '11',
+        student_id: 'JD001'
+      },
+      {
+        email: 'jane.smith@demo.school',
+        name: 'Jane Smith',
+        grade: '10',
+        student_id: 'JS001'
+      },
+      {
+        email: 'alex.johnson@demo.school',
+        name: 'Alex Johnson',
+        grade: '12',
+        student_id: 'AJ001'
+      },
+      {
+        email: 'emily.brown@demo.school',
+        name: 'Emily Brown',
+        grade: '11',
+        student_id: 'EB001'
+      }
+    ];
+
+    for (const studentData of students) {
+      const student = await userRepo.save({
+        email: studentData.email,
+        password_hash: hashedPassword,
+        name: studentData.name,
+        role: 'student',
+        organization_id: schoolOrg.id,
+        is_active: true,
+        email_verified: true,
+        metadata: {
+          grade: studentData.grade,
+          student_id: studentData.student_id
+        }
+      });
+      console.log('Created student:', student.name);
+    }
+
+    console.log('\nTest data populated successfully!');
+    console.log('\nLogin credentials:');
+    console.log('Admin: admin@demo.school / admin123');
+    console.log('Teacher: teacher@demo.school / admin123');
+    console.log('Students: [email] / admin123');
+
+    await AppDataSource.destroy();
+  } catch (error) {
+    console.error('Error populating test data:', error);
+    process.exit(1);
+  }
+}
+
+populateTestData();

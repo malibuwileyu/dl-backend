@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Time Tracker - Real-Time Alerts</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .alert {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #ff4444;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .alert.distraction {
+            border-left-color: #ff9800;
+        }
+        .alert.excessive_usage {
+            border-left-color: #f44336;
+        }
+        .alert.offtask {
+            border-left-color: #ff5722;
+        }
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .alert-type {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .alert-time {
+            color: #666;
+            font-size: 14px;
+        }
+        .status {
+            padding: 8px 16px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .status.connected {
+            background: #4caf50;
+            color: white;
+        }
+        #alerts-container {
+            min-height: 400px;
+        }
+        .no-alerts {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Time Tracker - Real-Time Alerts</h1>
+        <div id="status" class="status">Connecting...</div>
+        
+        <h2>Live Alerts</h2>
+        <div id="alerts-container">
+            <div class="no-alerts">Waiting for alerts...</div>
+        </div>
+    </div>
+
+    <script>
+        const alertsContainer = document.getElementById('alerts-container');
+        const statusEl = document.getElementById('status');
+        let alerts = [];
+        let eventSource;
+
+        function connectSSE() {
+            // Use relative URL to avoid protocol issues
+            eventSource = new EventSource('/api/v1/alerts/stream');
+            
+            eventSource.onopen = () => {
+                console.log('SSE Connected');
+                statusEl.textContent = 'Connected - Monitoring student activity';
+                statusEl.classList.add('connected');
+            };
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'init') {
+                    alerts = data.alerts;
+                    renderAlerts();
+                } else if (data.type === 'alert') {
+                    alerts.unshift(data.alert);
+                    if (alerts.length > 50) alerts.length = 50;
+                    renderAlerts();
+                } else if (data.type === 'clear') {
+                    alerts = [];
+                    renderAlerts();
+                }
+            };
+            
+            eventSource.onerror = (error) => {
+                console.error('SSE Error:', error);
+                statusEl.textContent = 'Disconnected - Reconnecting...';
+                statusEl.classList.remove('connected');
+                
+                // Reconnect after 3 seconds
+                setTimeout(connectSSE, 3000);
+            };
+        }
+
+        function renderAlerts() {
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = '<div class="no-alerts">No alerts detected. Monitoring student activity...</div>';
+                return;
+            }
+
+            alertsContainer.innerHTML = alerts.map(alert => {
+                const time = new Date(alert.timestamp).toLocaleTimeString();
+                const typeLabels = {
+                    distraction: 'Distracting App',
+                    excessive_usage: 'Excessive Usage',
+                    offtask: 'Off-Task Website'
+                };
+
+                return `
+                    <div class="alert ${alert.type}">
+                        <div class="alert-header">
+                            <span class="alert-type">${typeLabels[alert.type] || alert.type}</span>
+                            <span class="alert-time">${time}</span>
+                        </div>
+                        <div class="alert-content">
+                            <strong>${alert.appName}</strong>
+                            ${alert.duration ? ` - ${Math.round(alert.duration / 60)} minutes` : ''}
+                            ${alert.url ? `<br><small>${alert.url}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Start connection
+        connectSSE();
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>

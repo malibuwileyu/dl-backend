@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Productivity Analysis - Admin Dashboard v9</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            background: #1976D2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            border-bottom-color: white;
+        }
+        
+        .nav-spacer {
+            flex: 1;
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .filter-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .filter-input[type="date"] {
+            width: 160px;
+        }
+        
+        .apply-btn {
+            background: #1976D2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            align-self: flex-end;
+        }
+        
+        .apply-btn:hover {
+            background: #1565C0;
+        }
+        
+        /* Overview Cards */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .overview-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar.no-data {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+            font-style: italic;
+        }
+        
+        .progress-segment {
+            height: 100%;
+            float: left;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-width: 2px;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .progress-label {
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .progress-segment:hover .progress-label {
+            display: block;
+        }
+        
+        /* Only show label if segment is wide enough */
+        @media (min-width: 768px) {
+            .progress-segment.show-label .progress-label {
+                display: block;
+            }
+        }
+        
+        .progress-productive {
+            background: #4CAF50;
+        }
+        
+        .progress-neutral {
+            background: #9E9E9E;
+        }
+        
+        .progress-distracting {
+            background: #FF5722;
+        }
+        
+        .progress-offline {
+            background: #2196F3;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stat-change {
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .stat-change.positive {
+            color: #4CAF50;
+        }
+        
+        .stat-change.negative {
+            color: #FF5722;
+        }
+        
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: 400px;
+            position: relative;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: calc(100% - 60px);
+            width: 100%;
+        }
+        
+        #productivityChart, #trendsChart {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        /* Student List */
+        .students-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .export-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .export-btn:hover {
+            background: #45a049;
+        }
+        
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .students-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #e0e0e0;
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .students-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .students-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .student-name {
+            font-weight: 500;
+            color: #1976D2;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .student-name:hover {
+            text-decoration: underline;
+        }
+        
+        .productivity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .productivity-high {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .productivity-medium {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .productivity-low {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .time-breakdown {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .time-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .time-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 300px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 4px;
+        }
+        
+        .search-result-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .search-result-item:hover {
+            background: #f5f7fa;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .search-result-email {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        #studentSearch {
+            padding-right: 30px;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 18px;
+            font-weight: normal;
+            display: none;
+            line-height: 1;
+            padding: 0;
+            margin: 0;
+            height: 18px;
+            width: 18px;
+            text-align: center;
+        }
+        
+        .clear-search:hover {
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .apply-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Productivity Analysis</h1>
+            <div class="header-actions">
+                <span id="userInfo"></span>
+                <button onclick="logout()" class="action-btn">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="/admin-dashboard.html" class="nav-item">Dashboard</a>
+            <a href="/app-categories.html" class="nav-item">App Categories</a>
+            <a href="/website-categories.html" class="nav-item">Website Categories</a>
+            <a href="/productivity-analysis.html" class="nav-item active">Productivity Analysis</a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label class="filter-label">Search Student</label>
+                <div style="position: relative; display: inline-block;">
+                    <input type="text" class="filter-input" id="studentSearch" placeholder="Search for a student or select group..." style="width: 300px;">
+                    <span class="clear-search" style="display: none;">✕</span>
+                    <div id="searchResults" class="search-results" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Or Select Group</label>
+                <select class="filter-select" id="groupFilter">
+                    <option value="all">All Students</option>
+                    <option value="active">Active Today</option>
+                    <option value="grade-9">Grade 9</option>
+                    <option value="grade-10">Grade 10</option>
+                    <option value="grade-11">Grade 11</option>
+                    <option value="grade-12">Grade 12</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Time Period</label>
+                <select class="filter-select" id="periodFilter">
+                    <option value="today">Today</option>
+                    <option value="last24h">Last 24 Hours</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" id="customDateGroup" style="display: none;">
+                <label class="filter-label">Start Date</label>
+                <input type="date" class="filter-input" id="startDate">
+            </div>
+            
+            <div class="filter-group" id="customDateEndGroup" style="display: none;">
+                <label class="filter-label">End Date</label>
+                <input type="date" class="filter-input" id="endDate">
+            </div>
+            
+            <button class="apply-btn" id="applyFiltersBtn">Apply Filters</button>
+        </div>
+        
+        <!-- Overview Cards -->
+        <div class="overview-grid">
+            <!-- Overall Productivity -->
+            <div class="overview-card">
+                <h3 class="card-title">Overall Time Distribution</h3>
+                <div class="progress-bar" id="overallProgress">
+                    <div class="progress-segment progress-productive" style="width: 0%"><span class="progress-label">0%</span></div>
+                    <div class="progress-segment progress-neutral" style="width: 0%"><span class="progress-label">0%</span></div>
+                    <div class="progress-segment progress-distracting" style="width: 0%"><span class="progress-label">0%</span></div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #4CAF50;"></div>
+                        <span>Productive</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #9E9E9E;"></div>
+                        <span>Neutral</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #FF5722;"></div>
+                        <span>Distracting</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Academic vs Non-Academic -->
+            <div class="overview-card">
+                <h3 class="card-title">Academic vs Non-Academic Time</h3>
+                <div class="progress-bar" id="academicProgress">
+                    <div class="progress-segment" style="background: #1976D2; width: 0%; display: flex; align-items: center; justify-content: center;" id="academicPercent">0%</div>
+                    <div class="progress-segment" style="background: #FFA726; width: 0%; display: flex; align-items: center; justify-content: center;" id="nonAcademicPercent">0%</div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #1976D2;"></div>
+                        <span>Academic Apps</span>
+                        <span id="academicTimeLabel" style="margin-left: 8px; color: #666;">(0h 0m)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #FFA726;"></div>
+                        <span>Non-Academic Apps</span>
+                        <span id="nonAcademicTimeLabel" style="margin-left: 8px; color: #666;">(0h 0m)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Productivity Score -->
+            <div class="overview-card">
+                <h3 class="card-title">Average Productivity Score</h3>
+                <div class="stat-value" id="productivityScore">0%</div>
+                <div class="stat-label">Based on productive time vs total time</div>
+                <div class="stat-change positive" id="scoreChange">+0% from last period</div>
+            </div>
+            
+            <!-- Focus Time -->
+            <div class="overview-card">
+                <h3 class="card-title">Average Focus Time</h3>
+                <div class="stat-value" id="focusTime">0h 0m</div>
+                <div class="stat-label">Time in productive apps per student</div>
+                <div class="stat-change" id="focusChange">No change from last period</div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <!-- Category Breakdown Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Time by Category</h3>
+                    <select class="filter-select" id="chartView">
+                        <option value="pie">Pie Chart</option>
+                        <option value="bar">Bar Chart</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="productivityChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Trends Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Productivity Trends</h3>
+                    <select class="filter-select" id="trendPeriod">
+                        <option value="hour">Hourly</option>
+                        <option value="day">Daily</option>
+                        <option value="week">Weekly</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student List -->
+        <div class="students-section" id="studentsSection">
+            <div class="section-header">
+                <h2 class="section-title" id="studentsSectionTitle">Student Productivity Details</h2>
+                <button class="export-btn" id="exportBtn">Export CSV</button>
+            </div>
+            
+            <div id="studentsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Loading student data...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Chart.js -->
+    <script src="/chart.min.js"></script>
+    
+    <script>
+        let productivityData = null;
+        let productivityChart = null;
+        let trendsChart = null;
+        let selectedStudentId = null;
+        let selectedStudentName = null;
+        let allStudents = [];
+        
+        // Check authentication (disabled for now)
+        function checkAuth() {
+            // Authentication disabled for testing
+            document.getElementById('userInfo').textContent = 'Admin User';
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            window.location.href = '/admin.html';
+        }
+        
+        // Load productivity data
+        async function loadProductivityData() {
+            try {
+                const period = document.getElementById('periodFilter').value;
+                let url;
+                
+                if (selectedStudentId) {
+                    // Load individual student data
+                    url = `/api/v1/admin/students/${selectedStudentId}/productivity?period=${period}`;
+                } else {
+                    // Load group data
+                    const group = document.getElementById('groupFilter').value;
+                    url = `/api/v1/admin/productivity-analysis?period=${period}&group=${group}`;
+                }
+                
+                if (period === 'custom') {
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
+                    if (startDate && endDate) {
+                        url += `&startDate=${startDate}&endDate=${endDate}`;
+                    }
+                }
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load productivity data');
+                }
+                
+                const data = await response.json();
+                
+                // Handle different response formats
+                if (selectedStudentId) {
+                    // Transform individual student data to match group format
+                    productivityData = {
+                        summary: {
+                            studentCount: 1,
+                            productiveTime: data.productiveTime || 0,
+                            neutralTime: data.neutralTime || 0,
+                            distractingTime: data.distractingTime || 0,
+                            totalTime: data.totalTime || 0,
+                            academicTime: data.academicTime || 0,
+                            nonAcademicTime: data.nonAcademicTime || 0,
+                            scoreChange: 0,
+                            focusChange: 0
+                        },
+                        students: [data],
+                        trends: data.trends || { hour: [], day: [], week: [] }
+                    };
+                } else {
+                    productivityData = data;
+                    // Store all students for search
+                    if (productivityData.students) {
+                        allStudents = productivityData.students;
+                    }
+                }
+                
+                console.log('Loaded productivity data:', productivityData);
+                updateOverview();
+                updateCharts();
+                renderStudentList();
+            } catch (error) {
+                console.error('Error loading productivity data:', error);
+                // Show error state
+                document.getElementById('studentsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div>Failed to load productivity data</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update overview cards
+        function updateOverview() {
+            if (!productivityData) return;
+            
+            const { summary } = productivityData;
+            
+            // Update progress bar (excluding offline time)
+            const total = summary.productiveTime + summary.neutralTime + summary.distractingTime;
+            const productiveEl = document.querySelector('.progress-productive');
+            const neutralEl = document.querySelector('.progress-neutral');
+            const distractingEl = document.querySelector('.progress-distracting');
+            
+            if (total > 0) {
+                // Reset the progress bar if it was showing no-data message
+                const progressBar = document.getElementById('overallProgress');
+                if (progressBar.classList.contains('no-data')) {
+                    progressBar.classList.remove('no-data');
+                    progressBar.innerHTML = `
+                        <div class="progress-segment progress-productive" style="width: 0%; display: none;"><span class="progress-label">0%</span></div>
+                        <div class="progress-segment progress-neutral" style="width: 0%; display: none;"><span class="progress-label">0%</span></div>
+                        <div class="progress-segment progress-distracting" style="width: 0%; display: none;"><span class="progress-label">0%</span></div>
+                    `;
+                }
+                
+                const productivePercent = (summary.productiveTime / total) * 100;
+                const neutralPercent = (summary.neutralTime / total) * 100;
+                const distractingPercent = (summary.distractingTime / total) * 100;
+                
+                // Set widths and hide segments with 0%
+                productiveEl.style.width = productivePercent > 0 ? `${productivePercent}%` : '0';
+                productiveEl.style.display = productivePercent > 0 ? 'flex' : 'none';
+                
+                neutralEl.style.width = neutralPercent > 0 ? `${neutralPercent}%` : '0';
+                neutralEl.style.display = neutralPercent > 0 ? 'flex' : 'none';
+                
+                distractingEl.style.width = distractingPercent > 0 ? `${distractingPercent}%` : '0';
+                distractingEl.style.display = distractingPercent > 0 ? 'flex' : 'none';
+                
+                // Update labels
+                productiveEl.querySelector('.progress-label').textContent = `${Math.round(productivePercent)}%`;
+                neutralEl.querySelector('.progress-label').textContent = `${Math.round(neutralPercent)}%`;
+                distractingEl.querySelector('.progress-label').textContent = `${Math.round(distractingPercent)}%`;
+                
+                // Only show label if segment is wide enough (> 10%)
+                productiveEl.classList.toggle('show-label', productivePercent > 10);
+                neutralEl.classList.toggle('show-label', neutralPercent > 10);
+                distractingEl.classList.toggle('show-label', distractingPercent > 10);
+            } else {
+                // No data - show empty state
+                const progressBar = document.getElementById('overallProgress');
+                progressBar.classList.add('no-data');
+                progressBar.innerHTML = 'No activity data for this period';
+            }
+            
+            // Update academic vs non-academic
+            const academicTotal = summary.academicTime + summary.nonAcademicTime;
+            const academicPercentEl = document.getElementById('academicPercent');
+            const nonAcademicPercentEl = document.getElementById('nonAcademicPercent');
+            
+            if (academicTotal > 0) {
+                // Reset the progress bar if it was showing no-data message
+                const academicProgressBar = document.getElementById('academicProgress');
+                if (academicProgressBar.classList.contains('no-data')) {
+                    academicProgressBar.classList.remove('no-data');
+                    academicProgressBar.innerHTML = `
+                        <div class="progress-segment" style="background: #1976D2; width: 0%; display: none; align-items: center; justify-content: center;" id="academicPercent">0%</div>
+                        <div class="progress-segment" style="background: #FFA726; width: 0%; display: none; align-items: center; justify-content: center;" id="nonAcademicPercent">0%</div>
+                    `;
+                    academicPercentEl = document.getElementById('academicPercent');
+                    nonAcademicPercentEl = document.getElementById('nonAcademicPercent');
+                }
+                
+                const academicPercent = (summary.academicTime / academicTotal) * 100;
+                const nonAcademicPercent = (summary.nonAcademicTime / academicTotal) * 100;
+                
+                // Set widths and hide segments with 0%
+                academicPercentEl.style.width = academicPercent > 0 ? `${academicPercent}%` : '0';
+                academicPercentEl.style.display = academicPercent > 0 ? 'flex' : 'none';
+                academicPercentEl.style.alignItems = 'center';
+                academicPercentEl.style.justifyContent = 'center';
+                academicPercentEl.textContent = `${Math.round(academicPercent)}%`;
+                
+                nonAcademicPercentEl.style.width = nonAcademicPercent > 0 ? `${nonAcademicPercent}%` : '0';
+                nonAcademicPercentEl.style.display = nonAcademicPercent > 0 ? 'flex' : 'none';
+                nonAcademicPercentEl.style.alignItems = 'center';
+                nonAcademicPercentEl.style.justifyContent = 'center';
+                nonAcademicPercentEl.textContent = `${Math.round(nonAcademicPercent)}%`;
+                
+                document.getElementById('academicTimeLabel').textContent = `(${formatDuration(summary.academicTime)})`;
+                document.getElementById('nonAcademicTimeLabel').textContent = `(${formatDuration(summary.nonAcademicTime)})`;
+            } else {
+                // No data - show empty state
+                const academicProgressBar = document.getElementById('academicProgress');
+                academicProgressBar.classList.add('no-data');
+                academicProgressBar.innerHTML = 'No activity data for this period';
+                
+                document.getElementById('academicTimeLabel').textContent = '(0h 0m)';
+                document.getElementById('nonAcademicTimeLabel').textContent = '(0h 0m)';
+            }
+            
+            // Update productivity score
+            const productivityScore = summary.totalTime > 0 
+                ? Math.round((summary.productiveTime / summary.totalTime) * 100)
+                : 0;
+            document.getElementById('productivityScore').textContent = `${productivityScore}%`;
+            
+            // Update score change - only show if there's current data
+            const changeElement = document.getElementById('scoreChange');
+            if (summary.totalTime > 0) {
+                if (summary.scoreChange > 0) {
+                    changeElement.textContent = `+${summary.scoreChange}% from last period`;
+                    changeElement.className = 'stat-change positive';
+                } else if (summary.scoreChange < 0) {
+                    changeElement.textContent = `${summary.scoreChange}% from last period`;
+                    changeElement.className = 'stat-change negative';
+                } else {
+                    changeElement.textContent = 'No change from last period';
+                    changeElement.className = 'stat-change';
+                }
+                changeElement.style.display = 'block';
+            } else {
+                changeElement.style.display = 'none';
+            }
+            
+            // Update focus time
+            const avgFocusTime = summary.studentCount > 0 && summary.totalTime > 0
+                ? summary.productiveTime / summary.studentCount
+                : 0;
+            document.getElementById('focusTime').textContent = formatDuration(avgFocusTime);
+            
+            // Update focus change - only show if there's current data
+            const focusChangeElement = document.getElementById('focusChange');
+            if (summary.totalTime > 0) {
+                if (summary.focusChange > 0) {
+                    focusChangeElement.textContent = `+${formatDuration(summary.focusChange)} from last period`;
+                    focusChangeElement.className = 'stat-change positive';
+                } else if (summary.focusChange < 0) {
+                    focusChangeElement.textContent = `${formatDuration(Math.abs(summary.focusChange))} less than last period`;
+                    focusChangeElement.className = 'stat-change negative';
+                } else {
+                    focusChangeElement.textContent = 'No change from last period';
+                    focusChangeElement.className = 'stat-change';
+                }
+                focusChangeElement.style.display = 'block';
+            } else {
+                focusChangeElement.style.display = 'none';
+            }
+        }
+        
+        // Update charts
+        function updateCharts() {
+            if (!productivityData) return;
+            
+            try {
+                const { summary, trends } = productivityData;
+                console.log('Updating charts with summary:', summary);
+                console.log('Chart.js loaded:', typeof Chart !== 'undefined');
+                console.log('Canvas elements:', {
+                    productivity: document.getElementById('productivityChart'),
+                    trends: document.getElementById('trendsChart')
+                });
+            
+            // Update productivity chart
+            const chartType = document.getElementById('chartView').value;
+            const ctx = document.getElementById('productivityChart').getContext('2d');
+            
+            if (productivityChart) {
+                productivityChart.destroy();
+            }
+            
+            // Don't set canvas styles directly - let Chart.js handle it
+            
+            console.log('Creating productivity chart with data:', [
+                summary.productiveTime,
+                summary.neutralTime,
+                summary.distractingTime
+            ]);
+            
+            productivityChart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: ['Productive', 'Neutral', 'Distracting'],
+                    datasets: [{
+                        data: [
+                            summary.productiveTime,
+                            summary.neutralTime,
+                            summary.distractingTime
+                        ],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#9E9E9E',
+                            '#FF5722'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = formatDuration(context.parsed.y !== undefined ? context.parsed.y : context.parsed);
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update trends chart
+            updateTrendsChart();
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
+        }
+        
+        // Update trends chart
+        function updateTrendsChart() {
+            if (!productivityData || !productivityData.trends) return;
+            
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            const trendPeriod = document.getElementById('trendPeriod').value;
+            let trends = productivityData.trends[trendPeriod] || [];
+            
+            // For hourly view, ensure we show all 24 hours even if no data
+            if (trendPeriod === 'hour') {
+                const hourlyData = new Map(trends.map(t => [t.label, t]));
+                trends = [];
+                
+                // Always show 0-23 hours for consistency
+                for (let hour = 0; hour < 24; hour++) {
+                    const label = `${hour}:00`;
+                    const existing = hourlyData.get(label);
+                    
+                    trends.push({
+                        label: label,
+                        productive: existing ? existing.productive : 0,
+                        neutral: existing ? existing.neutral : 0,
+                        distracting: existing ? existing.distracting : 0
+                    });
+                }
+                
+                // Add a note if early in the day
+                const currentHour = new Date().getHours();
+                if (currentHour < 6 && trends.every(t => t.productive === 0 && t.neutral === 0 && t.distracting === 0)) {
+                    // No data yet today, might want to switch to weekly view
+                    console.log('No activity data yet today. Consider switching to weekly view.');
+                }
+            }
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+            
+            // Don't set canvas styles directly - let Chart.js handle it
+            
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trends.map(t => t.label),
+                    datasets: [
+                        {
+                            label: 'Productive',
+                            data: trends.map(t => t.productive),
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.1,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Neutral',
+                            data: trends.map(t => t.neutral),
+                            borderColor: '#9E9E9E',
+                            backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                            tension: 0.1,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Distracting',
+                            data: trends.map(t => t.distracting),
+                            borderColor: '#FF5722',
+                            backgroundColor: 'rgba(255, 87, 34, 0.1)',
+                            tension: 0.1,
+                            spanGaps: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatDuration(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = formatDuration(context.parsed.y);
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render student list
+        function renderStudentList() {
+            if (!productivityData || !productivityData.students) return;
+            
+            try {
+                const container = document.getElementById('studentsContainer');
+                const students = productivityData.students;
+                const sectionTitle = document.getElementById('studentsSectionTitle');
+                const studentsSection = document.getElementById('studentsSection');
+                
+                console.log('Rendering students:', students.length);
+                
+                if (selectedStudentId) {
+                    // Update section title for individual view
+                    sectionTitle.textContent = `${selectedStudentName} - Productivity Details`;
+                    // Hide export button for individual view
+                    const exportBtn = studentsSection.querySelector('.export-btn');
+                    if (exportBtn) exportBtn.style.display = 'none';
+                } else {
+                    sectionTitle.textContent = 'Student Productivity Details';
+                    const exportBtn = studentsSection.querySelector('.export-btn');
+                    if (exportBtn) exportBtn.style.display = 'inline-block';
+                }
+            
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div>No student data available</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="students-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Total Time</th>
+                            <th>Productivity Score</th>
+                            <th>Time Breakdown</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.map(student => {
+                            const productivityScore = student.totalTime > 0 
+                                ? Math.round((student.productiveTime / student.totalTime) * 100)
+                                : 0;
+                            
+                            let badgeClass = 'productivity-low';
+                            if (productivityScore >= 70) badgeClass = 'productivity-high';
+                            else if (productivityScore >= 40) badgeClass = 'productivity-medium';
+                            
+                            return `
+                                <tr>
+                                    <td>
+                                        <a href="/student-detail.html?id=${student.id}" class="student-name">
+                                            ${escapeHtml(student.name || student.email)}
+                                        </a>
+                                    </td>
+                                    <td>${formatDuration(student.totalTime)}</td>
+                                    <td>
+                                        <span class="productivity-badge ${badgeClass}">
+                                            ${productivityScore}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="time-breakdown">
+                                            <div class="time-item">
+                                                <div class="time-dot" style="background: #4CAF50;"></div>
+                                                <span>${formatDuration(student.productiveTime)}</span>
+                                            </div>
+                                            <div class="time-item">
+                                                <div class="time-dot" style="background: #9E9E9E;"></div>
+                                                <span>${formatDuration(student.neutralTime)}</span>
+                                            </div>
+                                            <div class="time-item">
+                                                <div class="time-dot" style="background: #FF5722;"></div>
+                                                <span>${formatDuration(student.distractingTime)}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            } catch (error) {
+                console.error('Error rendering student list:', error);
+            }
+        }
+        
+        // Format duration
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            }
+            return `${minutes}m`;
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Apply filters
+        function applyFilters() {
+            loadProductivityData();
+        }
+        
+        // Export data
+        function exportData() {
+            if (!productivityData || !productivityData.students) return;
+            
+            const period = document.getElementById('periodFilter').value;
+            const group = selectedStudentId ? selectedStudentName : document.getElementById('groupFilter').value;
+            const exportDate = new Date().toISOString().split('T')[0];
+            
+            // Create CSV content with more comprehensive data
+            const headers = [
+                'Student Name',
+                'Email',
+                'Grade',
+                'Total Time',
+                'Productive Time',
+                'Neutral Time', 
+                'Distracting Time',
+                'Academic Time',
+                'Non-Academic Time',
+                'Productivity Score (%)',
+                'Academic Percentage (%)'
+            ];
+            
+            const rows = productivityData.students.map(student => {
+                const productivityScore = student.totalTime > 0 
+                    ? Math.round((student.productiveTime / student.totalTime) * 100)
+                    : 0;
+                
+                const academicPercent = (student.academicTime + student.nonAcademicTime) > 0
+                    ? Math.round((student.academicTime / (student.academicTime + student.nonAcademicTime)) * 100)
+                    : 0;
+                
+                return [
+                    student.name || 'N/A',
+                    student.email,
+                    student.grade || 'N/A',
+                    formatDuration(student.totalTime),
+                    formatDuration(student.productiveTime),
+                    formatDuration(student.neutralTime),
+                    formatDuration(student.distractingTime),
+                    formatDuration(student.academicTime || 0),
+                    formatDuration(student.nonAcademicTime || 0),
+                    productivityScore,
+                    academicPercent
+                ];
+            });
+            
+            // Add summary row if viewing multiple students
+            if (!selectedStudentId && productivityData.summary) {
+                const summary = productivityData.summary;
+                const avgProductivity = summary.totalTime > 0 
+                    ? Math.round((summary.productiveTime / summary.totalTime) * 100)
+                    : 0;
+                const avgAcademic = (summary.academicTime + summary.nonAcademicTime) > 0
+                    ? Math.round((summary.academicTime / (summary.academicTime + summary.nonAcademicTime)) * 100)
+                    : 0;
+                
+                rows.push([
+                    'TOTAL/AVERAGE',
+                    `${summary.studentCount} students`,
+                    '-',
+                    formatDuration(summary.totalTime),
+                    formatDuration(summary.productiveTime),
+                    formatDuration(summary.neutralTime),
+                    formatDuration(summary.distractingTime),
+                    formatDuration(summary.academicTime),
+                    formatDuration(summary.nonAcademicTime),
+                    avgProductivity,
+                    avgAcademic
+                ]);
+            }
+            
+            // Add metadata header
+            const metadata = [
+                `Student Time Tracker - Productivity Analysis Report`,
+                `Generated: ${new Date().toLocaleString()}`,
+                `Period: ${period}`,
+                `Filter: ${group}`,
+                ''
+            ];
+            
+            const csv = [
+                ...metadata,
+                headers.join(','),
+                ...rows.map(row => row.map(cell => {
+                    // Escape quotes and wrap in quotes if contains comma
+                    const cellStr = String(cell);
+                    if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                        return `"${cellStr.replace(/"/g, '""')}"`;
+                    }
+                    return cellStr;
+                }).join(','))
+            ].join('\n');
+            
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `productivity-analysis-${group.replace(/\s+/g, '-')}-${exportDate}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Event listeners
+        document.getElementById('periodFilter').addEventListener('change', function() {
+            const isCustom = this.value === 'custom';
+            document.getElementById('customDateGroup').style.display = isCustom ? 'flex' : 'none';
+            document.getElementById('customDateEndGroup').style.display = isCustom ? 'flex' : 'none';
+        });
+        
+        document.getElementById('chartView').addEventListener('change', updateCharts);
+        document.getElementById('trendPeriod').addEventListener('change', updateTrendsChart);
+        
+        // Clear search and reset to group view
+        function clearSearch() {
+            selectedStudentId = null;
+            selectedStudentName = null;
+            document.getElementById('studentSearch').value = '';
+            document.getElementById('groupFilter').value = 'all';
+            document.querySelector('.clear-search').style.display = 'none';
+            loadProductivityData();
+        }
+        
+        // Student search functionality
+        let searchTimeout;
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('studentSearch');
+            const searchResults = document.getElementById('searchResults');
+            const groupFilter = document.getElementById('groupFilter');
+            
+            // Get existing clear button and add click handler
+            const clearBtn = document.querySelector('.clear-search');
+            clearBtn.addEventListener('click', clearSearch);
+            
+            searchInput.addEventListener('input', function(e) {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                
+                if (query.length === 0) {
+                    clearBtn.style.display = 'none';
+                    searchResults.style.display = 'none';
+                    if (selectedStudentId) {
+                        clearSearch();
+                    }
+                    return;
+                }
+                
+                clearBtn.style.display = 'block';
+                
+                if (query.length < 2) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(async () => {
+                    // Search from API instead of local array
+                    try {
+                        console.log('Searching for:', query);
+                        const response = await fetch(`/api/v1/admin/students?search=${encodeURIComponent(query)}`, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token') || 'dummy'}`
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            console.error('Search failed:', response.status);
+                            throw new Error('Failed to search students');
+                        }
+                        
+                        const data = await response.json();
+                        console.log('Search results:', data);
+                        const matches = data.students || [];
+                        
+                        if (matches.length > 0) {
+                            searchResults.innerHTML = matches.slice(0, 10).map(student => `
+                                <div class="search-result-item" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name || student.email)}">
+                                <div class="search-result-name">${escapeHtml(student.name || 'No Name')}</div>
+                                <div class="search-result-email">${escapeHtml(student.email)}</div>
+                            </div>
+                        `).join('');
+                            console.log('Setting search results HTML');
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.innerHTML = '<div class="search-result-item">No students found</div>';
+                            searchResults.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div class="search-result-item">Error searching students</div>';
+                        searchResults.style.display = 'block';
+                    }
+                }, 300);
+            });
+            
+            // Clear group filter when searching for individual
+            groupFilter.addEventListener('change', function() {
+                if (this.value !== 'all' && selectedStudentId) {
+                    clearSearch();
+                } else if (this.value !== 'all') {
+                    selectedStudentId = null;
+                    selectedStudentName = null;
+                    searchInput.value = '';
+                    clearBtn.style.display = 'none';
+                    loadProductivityData();
+                }
+            });
+            
+            // Handle clicking on search results
+            searchResults.addEventListener('click', function(e) {
+                const resultItem = e.target.closest('.search-result-item');
+                if (resultItem && resultItem.dataset.studentId) {
+                    const studentId = parseInt(resultItem.dataset.studentId);
+                    const studentName = resultItem.dataset.studentName;
+                    selectStudent(studentId, studentName);
+                }
+            });
+            
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+            
+            // Handle Enter key in search
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const firstResult = searchResults.querySelector('.search-result-item');
+                    if (firstResult && searchResults.style.display !== 'none') {
+                        firstResult.click();
+                    } else if (searchInput.value.trim()) {
+                        // If no results visible but there's text, apply filters
+                        applyFilters();
+                    }
+                }
+            });
+            
+            // Handle Apply Filters button
+            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
+        });
+        
+        // Select a student from search results
+        function selectStudent(studentId, studentName) {
+            selectedStudentId = studentId;
+            selectedStudentName = studentName;
+            document.getElementById('studentSearch').value = studentName;
+            document.getElementById('searchResults').style.display = 'none';
+            document.querySelector('.clear-search').style.display = 'block';
+            loadProductivityData();
+        }
+        
+        // Initialize
+        checkAuth();
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, Chart.js available:', typeof Chart !== 'undefined');
+                loadProductivityData();
+                // Add export button listener
+                document.getElementById('exportBtn').addEventListener('click', exportData);
+            });
+        } else {
+            console.log('DOM ready, Chart.js available:', typeof Chart !== 'undefined');
+            loadProductivityData();
+            // Add export button listener
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+        }
+    </script>
+</body>
+</html>

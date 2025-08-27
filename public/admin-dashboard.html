@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Time Tracker - Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            background: #1976D2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 0;
+        }
+        
+        .nav-item {
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-radius: 0;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            border-bottom-color: white;
+        }
+        
+        .nav-spacer {
+            flex: 1;
+        }
+        
+        .refresh-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: #1976D2;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        
+        .status-dot.connected {
+            background: #4CAF50;
+        }
+        
+        /* Main Layout */
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 600px;
+        }
+        
+        .student-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 2px solid #2196F3;
+            min-height: 500px;
+        }
+        
+        .student-list-header {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .student-list-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .student-list-content {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+        
+        .student-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .student-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .student-item.active {
+            background: #e3f2fd;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .student-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .student-name {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .student-status {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .student-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            flex-shrink: 0;
+        }
+        
+        .student-indicator.active {
+            background: #4CAF50;
+        }
+        
+        .student-indicator.alert {
+            background: #ff5252;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2196F3;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-top: 8px;
+        }
+        
+        .stat-change.negative {
+            color: #f44336;
+        }
+        
+        /* Activity Timeline */
+        .activity-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .timeline {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background: #e0e0e0;
+        }
+        
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .timeline-dot.productive {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .timeline-dot.neutral {
+            background: #FFC107;
+            color: white;
+        }
+        
+        .timeline-dot.distracting {
+            background: #f44336;
+            color: white;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-app {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        /* Alerts Section */
+        .alert-item {
+            padding: 16px 20px;
+            border-left: 4px solid #ff5252;
+            background: #ffebee;
+            margin-bottom: 12px;
+            border-radius: 4px;
+        }
+        
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+        
+        .alert-title {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .alert-time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .alert-message {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 300px;
+        }
+        
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #666;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Real-time Feed */
+        .realtime-feed {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .realtime-feed h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .realtime-feed h3::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .feed-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+        
+        .feed-empty {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+        
+        .feed-student {
+            font-weight: 600;
+            color: #2196F3;
+            text-decoration: none;
+        }
+        
+        .feed-student:hover {
+            text-decoration: underline;
+        }
+        
+        .feed-app {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .feed-time {
+            margin-left: auto;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .feed-category {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .feed-category.productive {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .feed-category.neutral {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .feed-category.distracting {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        /* Subcategory badges */
+        .subcategory-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+            font-weight: 500;
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .subcategory-badge.school { background: #e8f5e9; color: #2e7d32; }
+        .subcategory-badge.research { background: #e3f2fd; color: #1976d2; }
+        .subcategory-badge.creativity { background: #f3e5f5; color: #7b1fa2; }
+        .subcategory-badge.productivity { background: #e0f2f1; color: #00796b; }
+        .subcategory-badge.communication { background: #f5f5f5; color: #616161; }
+        .subcategory-badge.reading { background: #e1f5fe; color: #0277bd; }
+        .subcategory-badge.gaming { background: #ede7f6; color: #5e35b1; }
+        .subcategory-badge.scrolling { background: #fce4ec; color: #c2185b; }
+        .subcategory-badge.entertainment { background: #e8eaf6; color: #3949ab; }
+        .subcategory-badge.healthandfitness,
+        .subcategory-badge['health & fitness'] { background: #ffebee; color: #c62828; }
+        
+        /* Category Overview */
+        .category-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .category-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .category-card.productive {
+            border-top: 4px solid #4ADE80;
+        }
+        
+        .category-card.neutral {
+            border-top: 4px solid #94A3B8;
+        }
+        
+        .category-card.distracting {
+            border-top: 4px solid #F87171;
+        }
+        
+        .category-percentage {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .category-card.productive .category-percentage {
+            color: #4ADE80;
+        }
+        
+        .category-card.neutral .category-percentage {
+            color: #94A3B8;
+        }
+        
+        .category-card.distracting .category-percentage {
+            color: #F87171;
+        }
+        
+        .category-label {
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .category-time {
+            font-size: 18px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* Subcategory Grid */
+        .subcategory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .subcategory-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .subcategory-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .subcategory-emoji {
+            font-size: 24px;
+        }
+        
+        .subcategory-info {
+            flex: 1;
+        }
+        
+        .subcategory-name {
+            font-weight: 500;
+            color: #333;
+            text-transform: capitalize;
+            margin-bottom: 4px;
+        }
+        
+        .subcategory-time {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .subcategory-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .subcategory-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .student-list-content {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Student Time Tracker - Admin Dashboard</h1>
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <span class="status-dot" id="connection-status"></span>
+                    <span id="connection-text">Connecting...</span>
+                </div>
+                <button class="refresh-btn" id="refresh-btn">
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="/admin-dashboard.html" class="nav-item active">Dashboard</a>
+            <a href="/app-categories.html" class="nav-item">App Categories</a>
+            <a href="/website-categories.html" class="nav-item">Website Categories</a>
+            <a href="/productivity-analysis.html" class="nav-item">Productivity Analysis</a>
+        </div>
+    </nav>
+    
+    <div class="dashboard-container">
+        <!-- Sidebar with Student List -->
+        <div class="sidebar">
+            <div class="student-list">
+                <div class="student-list-header">
+                    <div class="student-list-title">Students</div>
+                    <input type="text" class="search-box" placeholder="Search students..." id="student-search">
+                </div>
+                <div class="student-list-content" id="student-list">
+                    <div class="loading">Loading students...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Welcome/Overview when no student selected -->
+            <div id="overview-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-students">0</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="active-now">0</div>
+                        <div class="stat-label">Active Now</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-alerts">0</div>
+                        <div class="stat-label">Alerts Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-productivity">0%</div>
+                        <div class="stat-label">Avg Productivity</div>
+                    </div>
+                </div>
+                
+                <!-- Category Overview -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Time by Category</h2>
+                    </div>
+                    <div id="category-overview" class="category-overview">
+                        <div class="empty-state">
+                            <p>Loading category data...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Subcategory Breakdown -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Activity Breakdown by Type</h2>
+                    </div>
+                    <div id="subcategory-breakdown" class="subcategory-grid">
+                        <div class="empty-state">
+                            <p>Loading activity breakdown...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Alerts -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Alerts</h2>
+                    </div>
+                    <div id="recent-alerts" class="timeline">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎉</div>
+                            <p>No alerts - students are focused!</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Real-time Activity Feed -->
+                <div class="realtime-feed">
+                    <h3>Live Activity Feed</h3>
+                    <div id="activity-feed" class="activity-feed">
+                        <div class="feed-empty">No recent activity</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Student Detail View (hidden by default) -->
+            <div id="student-detail" style="display: none;">
+                <!-- Student Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="student-time-today">0h 0m</div>
+                        <div class="stat-label">Time Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="student-productivity">0%</div>
+                        <div class="stat-label">Productivity</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="student-focus-time">0h 0m</div>
+                        <div class="stat-label">Focus Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="student-current-subject">None</div>
+                        <div class="stat-label">Current Subject</div>
+                    </div>
+                </div>
+                
+                <!-- Activity Timeline -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Activity Timeline</h2>
+                    </div>
+                    <div id="activity-timeline" class="timeline">
+                        <div class="loading">Loading activities...</div>
+                    </div>
+                </div>
+                
+                <!-- Student Alerts -->
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Alerts</h2>
+                    </div>
+                    <div id="student-alerts" class="timeline">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✨</div>
+                            <p>No alerts for this student</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // State
+        let socket;
+        let students = [];
+        let selectedStudentId = null;
+        let activities = {};
+        let alerts = [];
+        let activeStudents = new Set(); // Track students connected via WebSocket
+        
+        // Initialize
+        function init() {
+            connectWebSocket();
+            loadStudents();
+            setupEventListeners();
+            
+            // Initial update
+            updateActiveStudents();
+            
+            // Poll for active students every 10 seconds
+            setInterval(updateActiveStudents, 10000);
+        }
+        
+        // WebSocket Connection
+        function connectWebSocket() {
+            socket = io(window.location.origin);
+            
+            socket.on('connect', () => {
+                updateConnectionStatus(true);
+                console.log('Connected to server');
+            });
+            
+            socket.on('disconnect', () => {
+                updateConnectionStatus(false);
+            });
+            
+            // Real-time updates
+            socket.on('activity:update', (data) => {
+                handleActivityUpdate(data);
+            });
+            
+            socket.on('alert:new', (alert) => {
+                handleNewAlert(alert);
+            });
+            
+            // Track student connections
+            socket.on('student:connected', (studentId) => {
+                activeStudents.add(studentId);
+                updateStudentStatus(studentId, true);
+            });
+            
+            socket.on('student:disconnected', (studentId) => {
+                activeStudents.delete(studentId);
+                updateStudentStatus(studentId, false);
+            });
+        }
+        
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connection-status');
+            const text = document.getElementById('connection-text');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Connected';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Disconnected';
+            }
+        }
+        
+        // Load Students
+        async function loadStudents() {
+            try {
+                const response = await fetch('/api/v1/admin/students');
+                const data = await response.json();
+                
+                students = data.students || [];
+                renderStudentList();
+                updateOverviewStats();
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+        
+        // Render Student List
+        function renderStudentList() {
+            const container = document.getElementById('student-list');
+            const searchTerm = document.getElementById('student-search').value.toLowerCase();
+            
+            const filteredStudents = students.filter(student => 
+                student.name?.toLowerCase().includes(searchTerm) ||
+                student.email?.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredStudents.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No students found</p></div>';
+                return;
+            }
+            
+            container.innerHTML = filteredStudents.map(student => {
+                const initials = getInitials(student.name || student.email);
+                const isActive = isStudentActive(student.id);
+                const hasAlert = hasRecentAlert(student.id);
+                
+                return `
+                    <a href="/student-detail.html?id=${student.id}" style="text-decoration: none; color: inherit;">
+                        <div class="student-item ${selectedStudentId === student.id ? 'active' : ''}">
+                            <div class="student-avatar">${initials}</div>
+                            <div class="student-info">
+                                <div class="student-name">${student.name || student.email.split('@')[0]}</div>
+                                <div class="student-status">${isActive ? 'Active now' : 'Offline'}</div>
+                            </div>
+                            <div class="student-indicator ${isActive ? 'active' : ''} ${hasAlert ? 'alert' : ''}"></div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+        
+        // Select Student - make it global so onclick can access it
+        window.selectStudent = async function(studentId) {
+            selectedStudentId = studentId;
+            
+            // Update UI
+            renderStudentList();
+            document.getElementById('overview-content').style.display = 'none';
+            document.getElementById('student-detail').style.display = 'block';
+            
+            // Load student data
+            await loadStudentActivities(studentId);
+            await loadStudentAlerts(studentId);
+            updateStudentStats(studentId);
+        }
+        
+        // Load Student Activities
+        async function loadStudentActivities(studentId) {
+            try {
+                const response = await fetch(`/api/v1/admin/user-activities/${studentId}?period=today`);
+                const data = await response.json();
+                
+                activities[studentId] = data.activities || [];
+                renderActivityTimeline(studentId);
+            } catch (error) {
+                console.error('Error loading activities:', error);
+            }
+        }
+        
+        // Load Student Alerts
+        async function loadStudentAlerts(studentId) {
+            try {
+                const response = await fetch(`/api/v1/admin/alerts/user/${studentId}`);
+                const data = await response.json();
+                
+                renderStudentAlerts(data.alerts || []);
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+        
+        // Render Activity Timeline
+        function renderActivityTimeline(studentId) {
+            const container = document.getElementById('activity-timeline');
+            const userActivities = activities[studentId] || [];
+            
+            if (userActivities.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No activities recorded</p></div>';
+                return;
+            }
+            
+            container.innerHTML = userActivities.map(activity => {
+                const icon = getCategoryIcon(activity.category);
+                const duration = formatDuration(activity.duration);
+                const time = formatTime(activity.start_time);
+                
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${activity.category}">${icon}</div>
+                        <div class="timeline-content">
+                            <div class="timeline-app">${activity.app_name}</div>
+                            <div class="timeline-details">
+                                ${activity.url ? `${activity.window_title || 'Untitled'} • ${new URL(activity.url).hostname}` : ''}
+                                ${activity.subject ? `• ${activity.subject}` : ''}
+                                ${activity.subcategory ? `<span class="subcategory-badge ${activity.subcategory}">${getSubcategoryEmoji(activity.subcategory)} ${activity.subcategory}</span>` : ''}
+                            </div>
+                            <div class="timeline-time">${time} • ${duration}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Render Student Alerts
+        function renderStudentAlerts(alerts) {
+            const container = document.getElementById('student-alerts');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <p>No alerts for this student</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = alerts.map(alert => {
+                // Parse title and description from message if not provided
+                let title = alert.title;
+                let description = alert.description;
+                
+                if (!title || !description) {
+                    if (alert.message) {
+                        const parts = alert.message.split(': ');
+                        if (parts.length >= 2) {
+                            title = parts[0];
+                            description = parts.slice(1).join(': ');
+                        } else {
+                            title = alert.alert_type === 'distraction' ? 'Distracting App Alert' :
+                                    alert.alert_type === 'excessive_usage' ? 'Excessive Usage Alert' :
+                                    alert.alert_type === 'offtask' ? 'Off-Task Website Alert' : 'Alert';
+                            description = alert.message;
+                        }
+                    } else {
+                        title = 'Alert';
+                        description = 'No details available';
+                    }
+                }
+                
+                return `
+                    <div class="alert-item">
+                        <div class="alert-header">
+                            <div class="alert-title">${title}</div>
+                            <div class="alert-time">${formatTime(alert.created_at)}</div>
+                        </div>
+                        <div class="alert-message">${description}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Update Student Stats
+        function updateStudentStats(studentId) {
+            const userActivities = activities[studentId] || [];
+            const student = students.find(s => s.id === studentId);
+            
+            // Calculate total time
+            const totalSeconds = userActivities.reduce((sum, a) => sum + (a.duration || 0), 0);
+            document.getElementById('student-time-today').textContent = formatDuration(totalSeconds);
+            
+            // Calculate productivity
+            const productiveTime = userActivities
+                .filter(a => a.category === 'productive')
+                .reduce((sum, a) => sum + (a.duration || 0), 0);
+            const productivity = totalSeconds > 0 ? Math.round((productiveTime / totalSeconds) * 100) : 0;
+            document.getElementById('student-productivity').textContent = productivity + '%';
+            
+            // Calculate focus time (sessions > 5 minutes)
+            const focusTime = userActivities
+                .filter(a => a.duration > 300)
+                .reduce((sum, a) => sum + (a.duration || 0), 0);
+            document.getElementById('student-focus-time').textContent = formatDuration(focusTime);
+            
+            // Current subject
+            const latestActivity = userActivities[0];
+            document.getElementById('student-current-subject').textContent = 
+                latestActivity?.subject || 'None';
+        }
+        
+        // Update Overview Stats
+        function updateOverviewStats() {
+            document.getElementById('total-students').textContent = students.length;
+            
+            // Use WebSocket active students count
+            document.getElementById('active-now').textContent = activeStudents.size;
+            
+            // Load today's alerts
+            fetch('/api/v1/admin/alerts/today')
+                .then(res => res.json())
+                .then(data => {
+                    alerts = data.alerts || [];
+                    document.getElementById('total-alerts').textContent = alerts.length;
+                    renderRecentAlerts();
+                });
+            
+            // Calculate average productivity from productivity analysis data
+            fetch('/api/v1/admin/productivity-analysis?period=today')
+                .then(res => res.json())
+                .then(data => {
+                    const summary = data.summary || {};
+                    const categorizedTime = (summary.productiveTime || 0) + (summary.neutralTime || 0) + (summary.distractingTime || 0);
+                    const avgProductivity = categorizedTime > 0 ? (summary.productiveTime / categorizedTime) : 0;
+                    document.getElementById('avg-productivity').textContent = 
+                        Math.round(avgProductivity * 100) + '%';
+                    
+                    // Update category overview
+                    renderCategoryOverview(summary);
+                    
+                    // Update subcategory breakdown
+                    if (data.subcategoryTimes) {
+                        renderSubcategoryBreakdown(data.subcategoryTimes);
+                    }
+                });
+        }
+        
+        // Render Recent Alerts
+        function renderRecentAlerts() {
+            const container = document.getElementById('recent-alerts');
+            const recentAlerts = alerts.slice(0, 10);
+            
+            if (recentAlerts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎉</div>
+                        <p>No alerts - students are focused!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = recentAlerts.map(alert => {
+                const student = students.find(s => s.id === alert.user_id);
+                const studentName = student?.name || student?.email?.split('@')[0] || 'Unknown';
+                
+                // Parse title and description from message if not provided
+                let title = alert.title;
+                let description = alert.description;
+                
+                if (!title || !description) {
+                    if (alert.message) {
+                        const parts = alert.message.split(': ');
+                        if (parts.length >= 2) {
+                            title = parts[0];
+                            description = parts.slice(1).join(': ');
+                        } else {
+                            title = alert.alert_type === 'distraction' ? 'Distracting App Alert' :
+                                    alert.alert_type === 'excessive_usage' ? 'Excessive Usage Alert' :
+                                    alert.alert_type === 'offtask' ? 'Off-Task Website Alert' : 'Alert';
+                            description = alert.message;
+                        }
+                    } else {
+                        title = 'Alert';
+                        description = 'No details available';
+                    }
+                }
+                
+                return `
+                    <div class="alert-item" data-student-id="${alert.user_id}">
+                        <div class="alert-header">
+                            <div class="alert-title">${studentName}: ${title}</div>
+                            <div class="alert-time">${formatTime(alert.created_at)}</div>
+                        </div>
+                        <div class="alert-message">${description}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Real-time handlers
+        function handleActivityUpdate(data) {
+            // Mark student as active when we receive activity
+            if (data.userId && !activeStudents.has(data.userId)) {
+                activeStudents.add(data.userId);
+                updateStudentStatus(data.userId, true);
+            }
+            
+            // Update timeline if viewing this student
+            if (selectedStudentId === data.userId) {
+                loadStudentActivities(data.userId);
+            }
+            
+            // Add to real-time feed
+            addToActivityFeed(data);
+        }
+        
+        // Keep track of activity feed items
+        let activityFeedItems = [];
+        const MAX_FEED_ITEMS = 20;
+        
+        function addToActivityFeed(data) {
+            const student = students.find(s => String(s.id) === String(data.userId));
+            if (!student) return;
+            
+            const feedItem = {
+                id: Date.now(),
+                studentId: data.userId,
+                studentName: student.name || student.email,
+                appName: data.activity.app_name,
+                category: data.activity.category || 'neutral',
+                timestamp: new Date()
+            };
+            
+            // Add to beginning of array
+            activityFeedItems.unshift(feedItem);
+            
+            // Keep only last MAX_FEED_ITEMS
+            if (activityFeedItems.length > MAX_FEED_ITEMS) {
+                activityFeedItems = activityFeedItems.slice(0, MAX_FEED_ITEMS);
+            }
+            
+            renderActivityFeed();
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        function renderActivityFeed() {
+            const feedContainer = document.getElementById('activity-feed');
+            
+            if (activityFeedItems.length === 0) {
+                feedContainer.innerHTML = '<div class="feed-empty">No recent activity</div>';
+                return;
+            }
+            
+            feedContainer.innerHTML = activityFeedItems.map(item => {
+                return `
+                    <div class="feed-item">
+                        <a href="/student-detail.html?id=${item.studentId}" class="feed-student">${escapeHtml(item.studentName)}</a>
+                        <span class="feed-app">is using ${escapeHtml(item.appName)}</span>
+                        <span class="feed-category ${item.category}">${item.category}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+        
+        
+        function handleNewAlert(alert) {
+            // Don't add WebSocket alerts to the local array
+            // Instead, just refresh the alerts from the database
+            updateOverviewStats();
+            
+            // Update student list indicator
+            renderStudentList();
+            
+            // Update alerts if viewing this student
+            if (selectedStudentId === alert.user_id) {
+                loadStudentAlerts(alert.user_id);
+            }
+        }
+        
+        // Utility Functions
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(part => part[0])
+                .join('')
+                .substring(0, 2)
+                .toUpperCase();
+        }
+        
+        function isStudentActive(studentId) {
+            // Use WebSocket connection status, not database
+            return activeStudents.has(studentId);
+        }
+        
+        function updateStudentStatus(studentId, isActive) {
+            // Update the active count
+            const activeCount = activeStudents.size;
+            document.getElementById('active-now').textContent = activeCount;
+            
+            // Re-render student list to update status indicators
+            renderStudentList();
+        }
+        
+        function hasRecentAlert(studentId) {
+            const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+            return alerts.some(a => 
+                a.user_id === studentId && 
+                new Date(a.created_at) > oneHourAgo
+            );
+        }
+        
+        function getCategoryIcon(category) {
+            switch (category) {
+                case 'productive': return '✓';
+                case 'distracting': return '!';
+                default: return '•';
+            }
+        }
+        
+        function getSubcategoryEmoji(subcategory) {
+            const emojis = {
+                'school': '📚',
+                'research': '🔍',
+                'creativity': '🎨',
+                'productivity': '📊',
+                'communication': '💬',
+                'reading': '📖',
+                'health & fitness': '💪',
+                'healthandfitness': '💪',
+                'gaming': '🎮',
+                'scrolling': '📱',
+                'entertainment': '🎬'
+            };
+            return emojis[subcategory.toLowerCase()] || '📱';
+        }
+        
+        function getSubcategoryColor(subcategory) {
+            const colors = {
+                'school': '#4ADE80',
+                'research': '#60A5FA',
+                'creativity': '#A855F7',
+                'productivity': '#06B6D4',
+                'communication': '#94A3B8',
+                'reading': '#3B82F6',
+                'health & fitness': '#F87171',
+                'healthandfitness': '#F87171',
+                'gaming': '#A855F7',
+                'scrolling': '#EC4899',
+                'entertainment': '#6366F1'
+            };
+            return colors[subcategory.toLowerCase()] || '#6B7280';
+        }
+        
+        function renderCategoryOverview(summary) {
+            const container = document.getElementById('category-overview');
+            
+            const productiveTime = summary.productiveTime || 0;
+            const neutralTime = summary.neutralTime || 0;
+            const distractingTime = summary.distractingTime || 0;
+            const totalTime = productiveTime + neutralTime + distractingTime;
+            
+            if (totalTime === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No activity data available</p></div>';
+                return;
+            }
+            
+            const productivePercent = Math.round((productiveTime / totalTime) * 100);
+            const neutralPercent = Math.round((neutralTime / totalTime) * 100);
+            const distractingPercent = Math.round((distractingTime / totalTime) * 100);
+            
+            container.innerHTML = `
+                <div class="category-card productive">
+                    <div class="category-label">Productive</div>
+                    <div class="category-percentage">${productivePercent}%</div>
+                    <div class="category-time">${formatDuration(productiveTime)}</div>
+                </div>
+                <div class="category-card neutral">
+                    <div class="category-label">Neutral</div>
+                    <div class="category-percentage">${neutralPercent}%</div>
+                    <div class="category-time">${formatDuration(neutralTime)}</div>
+                </div>
+                <div class="category-card distracting">
+                    <div class="category-label">Distracting</div>
+                    <div class="category-percentage">${distractingPercent}%</div>
+                    <div class="category-time">${formatDuration(distractingTime)}</div>
+                </div>
+            `;
+        }
+        
+        function renderSubcategoryBreakdown(subcategoryTimes) {
+            const container = document.getElementById('subcategory-breakdown');
+            
+            // Convert object to array and sort by time
+            const subcategories = Object.entries(subcategoryTimes)
+                .filter(([_, time]) => time > 0)
+                .sort(([_, a], [__, b]) => b - a);
+            
+            if (subcategories.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No activity data available</p></div>';
+                return;
+            }
+            
+            // Calculate total time for percentages
+            const totalTime = subcategories.reduce((sum, [_, time]) => sum + time, 0);
+            
+            container.innerHTML = subcategories.map(([subcategory, time]) => {
+                const percentage = (time / totalTime) * 100;
+                const color = getSubcategoryColor(subcategory);
+                
+                return `
+                    <div class="subcategory-item">
+                        <div class="subcategory-emoji">${getSubcategoryEmoji(subcategory)}</div>
+                        <div class="subcategory-info">
+                            <div class="subcategory-name">${subcategory}</div>
+                            <div class="subcategory-time">${formatDuration(time)}</div>
+                            <div class="subcategory-bar">
+                                <div class="subcategory-bar-fill" style="width: ${percentage}%; background-color: ${color}"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            }
+            return `${minutes}m`;
+        }
+        
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit' 
+                });
+            }
+            
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            document.getElementById('student-search').addEventListener('input', renderStudentList);
+            
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', refreshData);
+            
+            // Event delegation for alert clicks
+            document.getElementById('recent-alerts').addEventListener('click', (e) => {
+                const alertItem = e.target.closest('.alert-item');
+                if (alertItem) {
+                    const studentId = alertItem.getAttribute('data-student-id');
+                    if (studentId) {
+                        selectStudent(studentId);
+                    }
+                }
+            });
+        }
+        
+        function refreshData() {
+            loadStudents();
+            if (selectedStudentId) {
+                loadStudentActivities(selectedStudentId);
+                loadStudentAlerts(selectedStudentId);
+            }
+        }
+        
+        
+        // Update active students based on recent activity
+        async function updateActiveStudents() {
+            try {
+                const response = await fetch('/api/v1/admin/active-students');
+                const data = await response.json();
+                
+                // Update active students set
+                activeStudents.clear();
+                (data.activeStudents || []).forEach(id => activeStudents.add(String(id)));
+                
+                // Update UI
+                document.getElementById('active-now').textContent = activeStudents.size;
+                renderStudentList();
+                
+                // Update activity feed with recent activities
+                if (data.recentActivities) {
+                    // Clear existing feed and rebuild with latest activities
+                    activityFeedItems = [];
+                    
+                    // Group by user and take most recent
+                    const latestByUser = {};
+                    data.recentActivities.forEach(activity => {
+                        const userId = String(activity.user_id);
+                        if (!latestByUser[userId] || new Date(activity.start_time) > new Date(latestByUser[userId].start_time)) {
+                            latestByUser[userId] = activity;
+                        }
+                    });
+                    
+                    // Add to feed
+                    Object.values(latestByUser).forEach(activity => {
+                        addToActivityFeed({
+                            userId: String(activity.user_id),
+                            activity: {
+                                app_name: activity.app_name,
+                                category: activity.category || 'neutral'
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating active students:', error);
+            }
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

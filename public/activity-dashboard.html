@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Activity Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e0e0e0;
+            color: #666;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .status-badge.connected {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+        
+        .student-item:hover {
+            background: #e3f2fd;
+            transform: translateX(4px);
+        }
+        
+        .student-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .student-info {
+            flex: 1;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .student-activity {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+            text-align: right;
+        }
+        
+        .alert-item {
+            padding: 16px;
+            border-left: 4px solid #ff5722;
+            background: #fff3e0;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        
+        .alert-item.warning {
+            border-left-color: #ff9800;
+            background: #fff8e1;
+        }
+        
+        .alert-item.danger {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+        
+        .refresh-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .refresh-btn:hover {
+            background: #1976D2;
+        }
+        
+        .time-chart {
+            height: 200px;
+            margin-top: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>
+                Student Activity Dashboard
+                <span id="status" class="status-badge">Connecting...</span>
+            </h1>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="active-students">0</div>
+                <div class="stat-label">Active Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-activities">0</div>
+                <div class="stat-label">Activities Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="alerts-count">0</div>
+                <div class="stat-label">Active Alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-time">0h</div>
+                <div class="stat-label">Avg. Screen Time</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="section">
+                <div class="section-title">
+                    Active Students
+                    <button class="refresh-btn" onclick="refreshData()">Refresh</button>
+                </div>
+                <div id="students-list">
+                    <div class="no-data">Loading student activity...</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Recent Alerts</div>
+                <div id="alerts-list">
+                    <div class="no-data">No alerts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(window.location.origin);
+        const statusEl = document.getElementById('status');
+        
+        // Mock data for demonstration
+        let activeStudents = [];
+        let recentAlerts = [];
+        
+        socket.on('connect', () => {
+            statusEl.textContent = 'Connected';
+            statusEl.classList.add('connected');
+            console.log('Connected to server');
+            fetchLatestData();
+        });
+        
+        socket.on('disconnect', () => {
+            statusEl.textContent = 'Disconnected';
+            statusEl.classList.remove('connected');
+        });
+        
+        // Listen for real-time updates
+        socket.on('activity:update', (data) => {
+            updateStudentActivity(data);
+        });
+        
+        socket.on('alert:new', (alert) => {
+            addAlert(alert);
+        });
+        
+        function fetchLatestData() {
+            // Fetch student activities
+            fetch('/api/v1/analytics/active-students')
+                .then(res => res.json())
+                .then(data => {
+                    updateActiveStudents(data);
+                })
+                .catch(err => console.error('Error fetching students:', err));
+                
+            // Fetch recent alerts
+            fetch('/api/v1/alerts/recent')
+                .then(res => res.json())
+                .then(data => {
+                    updateAlerts(data);
+                })
+                .catch(err => console.error('Error fetching alerts:', err));
+                
+            // Fetch usage statistics
+            fetch('/api/v1/analytics/usage-stats')
+                .then(res => res.json())
+                .then(data => {
+                    updateStats(data);
+                })
+                .catch(err => console.error('Error fetching stats:', err));
+        }
+        
+        function updateStats(stats) {
+            if (!stats) return;
+            
+            // Update the stat cards
+            document.getElementById('active-students').textContent = stats.activeUsers || '0';
+            document.getElementById('total-activities').textContent = stats.totalActivities || '0';
+            document.getElementById('alerts-count').textContent = stats.activeAlerts || '0';
+            
+            // Calculate average time in hours
+            if (stats.avgDuration) {
+                const hours = Math.floor(stats.avgDuration / 3600);
+                const minutes = Math.floor((stats.avgDuration % 3600) / 60);
+                document.getElementById('avg-time').textContent = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+            }
+        }
+        
+        function updateActiveStudents(students) {
+            const container = document.getElementById('students-list');
+            
+            if (!students || students.length === 0) {
+                container.innerHTML = '<div class="no-data">No active students</div>';
+                return;
+            }
+            
+            container.innerHTML = students.map(student => {
+                const name = student.name || student.email?.split('@')[0] || 'Unknown';
+                const initials = name.split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase();
+                const timeAgo = formatTimeAgo(student.lastActivity);
+                
+                return `
+                    <div class="student-item">
+                        <div class="student-avatar">${initials}</div>
+                        <div class="student-info">
+                            <div class="student-name">${name}</div>
+                            <div class="student-activity">${student.currentApp || 'No activity'}</div>
+                        </div>
+                        <div class="activity-time">${timeAgo}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-list');
+            
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<div class="no-data">No recent alerts</div>';
+                document.getElementById('alerts-count').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('alerts-count').textContent = alerts.length;
+            
+            container.innerHTML = alerts.slice(0, 10).map(alert => {
+                const alertClass = alert.severity === 'high' ? 'danger' : 'warning';
+                return `
+                    <div class="alert-item ${alertClass}">
+                        <strong>${alert.type}</strong><br>
+                        ${alert.message}<br>
+                        <small>${formatTimeAgo(alert.timestamp)}</small>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'Never';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+        
+        function refreshData() {
+            fetchLatestData();
+        }
+        
+        function addAlert(alert) {
+            recentAlerts.unshift(alert);
+            if (recentAlerts.length > 10) recentAlerts.length = 10;
+            updateAlerts(recentAlerts);
+        }
+        
+        function updateStudentActivity(data) {
+            // Update the student list with new activity
+            fetchLatestData();
+        }
+        
+        // No more polling needed - everything is real-time!
+        // Just fetch initial data
+        fetchLatestData();
+    </script>
+</body>
+</html>
