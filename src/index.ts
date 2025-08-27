@@ -111,6 +111,7 @@ async function startServer() {
     }
     
     console.log('[Server] Attempting Redis connection...');
+    console.log('[Server] REDIS_URL:', process.env.REDIS_URL?.substring(0, 50) + '...');
     console.log('[Server] REDIS_URL length:', process.env.REDIS_URL?.length || 0);
     
     try {
@@ -119,7 +120,9 @@ async function startServer() {
       logger.info('✅ Redis connected');
     } catch (redisError) {
       console.error('[Server] Redis connection failed:', redisError);
-      throw redisError;
+      console.error('[Server] WARNING: Continuing without Redis - some features may not work');
+      // Don't throw - Redis isn't strictly required for basic operation
+      // throw redisError;
     }
     
     // Comment out jobs for now - they might be causing issues

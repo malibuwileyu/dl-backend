@@ -8,18 +8,31 @@ let subClient: Redis;
 
 export async function connectRedis(): Promise<void> {
   try {
-    // Main Redis client for general operations
-    redisClient = new Redis(config.redis.url, {
+    // Railway provides internal URLs that need special handling
+    const redisUrl = config.redis.url;
+    console.log('[Redis] Connecting with URL format:', redisUrl.substring(0, 30) + '...');
+    
+    // Parse Redis URL for Railway compatibility
+    let redisOptions: any = {
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
       },
       maxRetriesPerRequest: 3,
-    });
+    };
+
+    // For Railway internal URLs, we need to handle them specially
+    if (redisUrl.includes('railway.internal')) {
+      console.log('[Redis] Detected Railway internal URL, using family 6 for IPv6');
+      redisOptions.family = 6; // Force IPv6 for Railway internal networking
+    }
+
+    // Main Redis client for general operations
+    redisClient = new Redis(redisUrl, redisOptions);
 
     // Pub/Sub clients for real-time features
-    pubClient = new Redis(config.redis.url);
-    subClient = new Redis(config.redis.url);
+    pubClient = new Redis(redisUrl, redisOptions);
+    subClient = new Redis(redisUrl, redisOptions);
 
     // Test the connection
     await redisClient.ping();
