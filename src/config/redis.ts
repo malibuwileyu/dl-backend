@@ -37,8 +37,9 @@ export async function connectRedis(): Promise<void> {
     // Test the connection
     await redisClient.ping();
 
-    // Set up error handling
+    // Set up error handling - don't let errors crash the app
     redisClient.on('error', (err) => {
+      console.error('[Redis] Connection error (non-fatal):', err.message);
       logger.error('Redis error:', err);
     });
 

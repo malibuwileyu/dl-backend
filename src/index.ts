@@ -111,7 +111,7 @@ async function startServer() {
     }
     
     console.log('[Server] Attempting Redis connection...');
-    console.log('[Server] REDIS_URL:', process.env.REDIS_URL?.substring(0, 50) + '...');
+    console.log('[Server] REDIS_URL:', process.env.REDIS_URL);
     console.log('[Server] REDIS_URL length:', process.env.REDIS_URL?.length || 0);
     
     try {
