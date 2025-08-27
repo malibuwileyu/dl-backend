@@ -9,4 +9,4 @@ restartPolicyMaxRetries = 10
 
 [healthcheck]
 path = "/health"
-port = 4051
+port = 8080
