@@ -94,33 +94,46 @@ app.use(errorHandler);
 // Start server
 async function startServer() {
   try {
+    console.log('[Server] Starting server initialization...');
+    console.log('[Server] Config loaded successfully');
+    
     // Connect to databases
-    await connectDatabase();
-    logger.info('✅ PostgreSQL connected with TypeORM');
+    console.log('[Server] Attempting PostgreSQL connection...');
+    console.log('[Server] DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
     
-    await connectRedis();
-    logger.info('✅ Redis connected');
+    try {
+      await connectDatabase();
+      console.log('[Server] PostgreSQL connected successfully');
+      logger.info('✅ PostgreSQL connected with TypeORM');
+    } catch (dbError) {
+      console.error('[Server] PostgreSQL connection failed:', dbError);
+      throw dbError;
+    }
     
-    // Setup learning job for categorization improvement
-    const { setupLearningJob } = await import('./jobs/learningJob');
-    setupLearningJob();
-    logger.info('✅ Learning job scheduled');
+    console.log('[Server] Attempting Redis connection...');
+    console.log('[Server] REDIS_URL length:', process.env.REDIS_URL?.length || 0);
     
-    // Setup AI categorization job
-    const { setupAICategorizationJob } = await import('./jobs/aiCategorizationJob');
-    setupAICategorizationJob();
-    logger.info('✅ AI categorization job scheduled');
+    try {
+      await connectRedis();
+      console.log('[Server] Redis connected successfully');
+      logger.info('✅ Redis connected');
+    } catch (redisError) {
+      console.error('[Server] Redis connection failed:', redisError);
+      throw redisError;
+    }
     
-    // Start active student tracking service
-    await import('./services/activeStudentService');
-    logger.info('✅ Active student tracking started');
+    // Comment out jobs for now - they might be causing issues
+    console.log('[Server] Skipping job setup for debugging...');
     
     // Start HTTP server
+    console.log('[Server] Starting HTTP server on port', config.app.port);
     httpServer.listen(config.app.port, () => {
+      console.log('[Server] HTTP server started successfully');
       logger.info(`🚀 Server running on port ${config.app.port} in ${config.app.env} mode`);
     });
     
   } catch (error) {
+    console.error('[Server] Fatal error during startup:', error);
     logger.error('❌ Failed to start server:', error);
     process.exit(1);
   }
@@ -134,5 +147,17 @@ process.on('SIGTERM', async () => {
   });
 });
 
+// Catch uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('[Server] Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Server] Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
 // Start the server
-startServer();// restart
+console.log('[Server] Starting application...');
+startServer();
