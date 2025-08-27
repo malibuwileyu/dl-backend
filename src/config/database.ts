@@ -13,15 +13,37 @@ import { logger } from './logger';
 
 dotenv.config();
 
+// Parse DATABASE_URL if available (for Railway/Heroku style deployments)
+const databaseUrl = process.env.DATABASE_URL || config.database.url;
+let dbConfig: any = {};
+
+if (databaseUrl) {
+  // Use connection string directly
+  dbConfig = {
+    type: 'postgres',
+    url: databaseUrl,
+    synchronize: false,
+    logging: process.env.NODE_ENV === 'development',
+    ssl: process.env.NODE_ENV === 'production' ? {
+      rejectUnauthorized: false
+    } : false,
+  };
+} else {
+  // Fall back to individual env vars
+  dbConfig = {
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_NAME || 'student_time_tracker',
+    synchronize: false,
+    logging: process.env.NODE_ENV === 'development',
+  };
+}
+
 export const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'student_time_tracker',
-  synchronize: false, // Disabled to prevent schema conflicts
-  logging: process.env.NODE_ENV === 'development',
+  ...dbConfig,
   entities: [
     Activity,
     User,
@@ -40,6 +62,9 @@ let pool: Pool;
 
 export async function connectDatabase(): Promise<void> {
   try {
+    console.log('[Database] Using DATABASE_URL:', databaseUrl ? 'Yes' : 'No');
+    console.log('[Database] Database URL format check:', databaseUrl?.startsWith('postgres') ? 'Valid PostgreSQL URL' : 'Invalid or missing');
+    
     // Initialize TypeORM
     await AppDataSource.initialize();
     
