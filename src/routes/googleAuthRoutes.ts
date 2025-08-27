@@ -11,11 +11,11 @@ const webClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET
 );
-// iOS client for native app logins
+// iOS/macOS client for native app logins
 const iosClient = new OAuth2Client(
-  '433143778568-m40gappl43ipm748s75k1clqcc0frnk7.apps.googleusercontent.com',
-  undefined, // iOS clients don't have client secrets
-  'com.trilogy.studenttimetracker:/oauth2redirect'
+  process.env.GOOGLE_CLIENT_ID || '433143778568-oh3fgg8c16f7bff85unc7ogf9aq3ll2u.apps.googleusercontent.com',
+  process.env.GOOGLE_CLIENT_SECRET,
+  'studenttimetracker://auth-callback'
 );
 const userService = new UserService();
 
@@ -137,7 +137,7 @@ router.post('/google/exchange', async (req: Request, res: Response): Promise<Res
     // Verify the ID token
     const ticket = await iosClient.verifyIdToken({
       idToken: tokens.id_token,
-      audience: '433143778568-m40gappl43ipm748s75k1clqcc0frnk7.apps.googleusercontent.com'
+      audience: process.env.GOOGLE_CLIENT_ID || '433143778568-oh3fgg8c16f7bff85unc7ogf9aq3ll2u.apps.googleusercontent.com'
     });
 
     const payload = ticket.getPayload();
