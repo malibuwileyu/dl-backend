@@ -15,7 +15,7 @@ const webClient = new OAuth2Client(
 const iosClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID || '433143778568-oh3fgg8c16f7bff85unc7ogf9aq3ll2u.apps.googleusercontent.com',
   process.env.GOOGLE_CLIENT_SECRET,
-  'studenttimetracker://auth-callback'
+  'com.googleusercontent.apps.433143778568-oh3fgg8c16f7bff85unc7ogf9aq3ll2u:/oauth2redirect'
 );
 const userService = new UserService();
 
