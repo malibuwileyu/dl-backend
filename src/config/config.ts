@@ -1,5 +1,16 @@
 import { z } from 'zod';
 
+// Debug environment variables on Railway
+console.log('=== Environment Variables Debug ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('REDIS_URL exists:', !!process.env.REDIS_URL);
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('CORS_ORIGINS:', process.env.CORS_ORIGINS);
+console.log('All env keys:', Object.keys(process.env).sort().join(', '));
+console.log('=================================');
+
 // Environment variable schema
 const envSchema = z.object({
   // App
